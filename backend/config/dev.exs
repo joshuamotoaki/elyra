@@ -2,12 +2,7 @@ import Config
 
 # Configure your database
 config :backend, Backend.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "backend_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
+  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost/elyra",
   pool_size: 10
 
 # For development, we disable any cache and enable
