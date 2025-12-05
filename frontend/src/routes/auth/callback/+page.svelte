@@ -1,30 +1,30 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { auth } from '$lib/stores/auth.svelte';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { auth } from '$lib/stores/auth.svelte';
 
-  let error = $state<string | null>(null);
+	let error = $state<string | null>(null);
 
-  onMount(async () => {
-    const params = $page.url.searchParams;
-    const token = params.get('token');
-    const redirect = params.get('redirect') || '/dashboard';
-    const errorMsg = params.get('error');
+	onMount(async () => {
+		const params = $page.url.searchParams;
+		const token = params.get('token');
+		const redirect = params.get('redirect') || '/dashboard';
+		const errorMsg = params.get('error');
 
-    if (errorMsg) {
-      error = decodeURIComponent(errorMsg);
-      return;
-    }
+		if (errorMsg) {
+			error = decodeURIComponent(errorMsg);
+			return;
+		}
 
-    if (token) {
-      auth.setToken(token);
-      await auth.loadUser();
-      goto(redirect);
-    } else {
-      error = 'No authentication token received';
-    }
-  });
+		if (token) {
+			auth.setToken(token);
+			await auth.loadUser();
+			goto(redirect);
+		} else {
+			error = 'No authentication token received';
+		}
+	});
 </script>
 
 <div class="flex min-h-screen items-center justify-center">
