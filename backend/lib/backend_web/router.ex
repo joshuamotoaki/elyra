@@ -5,8 +5,19 @@ defmodule BackendWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  scope "/api/swagger" do
+    forward("/", OpenApiSpex.Plug.SwaggerUI, path: "/api/openapi")
+  end
+
+  scope "/api" do
+    pipe_through(:api)
+
+    get("/openapi", OpenApiSpex.Plug.RenderSpec, [])
+  end
+
   scope "/api", BackendWeb do
     pipe_through(:api)
+    # Add your API routes here
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
