@@ -5,8 +5,13 @@ defmodule BackendWeb.Router do
     plug(:accepts, ["json"])
   end
 
-  scope "/api/swagger" do
-    forward("/", OpenApiSpex.Plug.SwaggerUI, path: "/api/openapi")
+  pipeline :browser do
+    plug(:accepts, ["html", "json"])
+    plug(:fetch_session)
+  end
+
+  pipeline :authenticated do
+    plug(BackendWeb.AuthPipeline)
   end
 
   scope "/api" do
@@ -15,9 +20,31 @@ defmodule BackendWeb.Router do
     get("/openapi", OpenApiSpex.Plug.RenderSpec, [])
   end
 
+  scope "/api/swagger" do
+    forward("/", OpenApiSpex.Plug.SwaggerUI, path: "/api/openapi")
+  end
+
+  # OAuth routes (needs session for CSRF state)
+  scope "/api/auth", BackendWeb do
+    pipe_through(:browser)
+
+    get("/:provider", AuthController, :request)
+    get("/:provider/callback", AuthController, :callback)
+  end
+
+  # Public API routes
   scope "/api", BackendWeb do
     pipe_through(:api)
-    # Add your API routes here
+
+    get("/users/check-username", UserController, :check_username)
+  end
+
+  # Protected API routes
+  scope "/api", BackendWeb do
+    pipe_through([:api, :authenticated])
+
+    get("/users/me", UserController, :me)
+    put("/users/username", UserController, :set_username)
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

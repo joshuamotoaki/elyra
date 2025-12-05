@@ -72,3 +72,5 @@ make dev-full
 | Backend  | 4000 |
 | Postgres | 5432 |
 | Redis    | 6380 |
+
+Use local database url `postgresql://postgres:postgres@localhost:5432/elyra` and Redis url `redis://localhost:6380` for local development.

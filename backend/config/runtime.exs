@@ -1,4 +1,5 @@
 import Config
+import Dotenvy
 
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
@@ -16,8 +17,30 @@ import Config
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
+
+if config_env() == :dev do
+  source!([".env", System.get_env()])
+end
+
 if System.get_env("PHX_SERVER") do
   config :backend, BackendWeb.Endpoint, server: true
+end
+
+# Google OAuth
+google_client_id = env!("GOOGLE_CLIENT_ID", :string, nil)
+google_client_secret = env!("GOOGLE_CLIENT_SECRET", :string, nil)
+
+if google_client_id do
+  config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+    client_id: google_client_id,
+    client_secret: google_client_secret
+end
+
+# Guardian secret key (production)
+guardian_secret = env!("GUARDIAN_SECRET_KEY", :string, nil)
+
+if guardian_secret do
+  config :backend, Backend.Guardian, secret_key: guardian_secret
 end
 
 if config_env() == :prod do

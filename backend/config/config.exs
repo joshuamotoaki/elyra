@@ -39,6 +39,18 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Ueberauth
+config :ueberauth, Ueberauth,
+  base_path: "/api/auth",
+  providers: [
+    google: {Ueberauth.Strategy.Google, [default_scope: "email profile"]}
+  ]
+
+# Guardian
+config :backend, Backend.Guardian,
+  issuer: "backend",
+  secret_key: "dev-secret-key-change-in-production"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

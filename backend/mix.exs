@@ -45,7 +45,15 @@ defmodule Backend.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
-      {:open_api_spex, "~> 3.18"}
+      {:open_api_spex, "~> 3.18"},
+
+      # Authentication
+      {:dotenvy, "~> 1.1.0"},
+      {:ueberauth, "~> 0.10"},
+      {:ueberauth_google, "~> 0.12"},
+      {:guardian, "~> 2.3"},
+      # CORS
+      {:cors_plug, "~> 3.0"}
     ]
   end
 
