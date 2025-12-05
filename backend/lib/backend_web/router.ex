@@ -2,11 +2,11 @@ defmodule BackendWeb.Router do
   use BackendWeb, :router
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
   end
 
   scope "/api", BackendWeb do
-    pipe_through :api
+    pipe_through(:api)
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
@@ -19,10 +19,10 @@ defmodule BackendWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through [:fetch_session, :protect_from_forgery]
+      pipe_through([:fetch_session, :protect_from_forgery])
 
-      live_dashboard "/dashboard", metrics: BackendWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
+      live_dashboard("/dashboard", metrics: BackendWeb.Telemetry)
+      forward("/mailbox", Plug.Swoosh.MailboxPreview)
     end
   end
 end
