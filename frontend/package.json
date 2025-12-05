@@ -27,5 +27,19 @@
 		"tailwindcss": "^4.1.17",
 		"typescript": "^5.9.3",
 		"vite": "^7.2.2"
+	},
+	"dependencies": {
+		"@dimforge/rapier3d-compat": "^0.19.3",
+		"@theatre/core": "^0.7.2",
+		"@theatre/studio": "^0.7.2",
+		"@threlte/core": "^8.3.1",
+		"@threlte/extras": "^9.7.1",
+		"@threlte/flex": "^2.1.1",
+		"@threlte/rapier": "^3.2.0",
+		"@threlte/studio": "^0.2.1",
+		"@threlte/theatre": "^3.1.2",
+		"@threlte/xr": "^1.2.0",
+		"@types/three": "^0.181.0",
+		"three": "^0.181.2"
 	}
 }
