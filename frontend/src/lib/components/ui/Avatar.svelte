@@ -8,7 +8,7 @@
 
 	let { src, fallback = '?', size = 'md', class: className = '' }: Props = $props();
 
-	const initial = fallback?.charAt(0).toUpperCase() || '?';
+	const initial = $derived(fallback?.charAt(0).toUpperCase() || '?');
 
 	const sizes = {
 		sm: 'w-8 h-8 text-sm',

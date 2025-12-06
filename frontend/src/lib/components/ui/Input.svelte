@@ -18,7 +18,8 @@
 		...rest
 	}: Props = $props();
 
-	const inputId = id || `input-${Math.random().toString(36).slice(2, 9)}`;
+	const fallbackId = `input-${Math.random().toString(36).slice(2, 9)}`;
+	const inputId = $derived(id || fallbackId);
 </script>
 
 <div class="w-full">
