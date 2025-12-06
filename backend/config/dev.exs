@@ -2,12 +2,7 @@ import Config
 
 # Configure your database
 config :backend, Backend.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "backend_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
+  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost/elyra",
   pool_size: 10
 
 # For development, we disable any cache and enable
@@ -16,10 +11,17 @@ config :backend, Backend.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
+# When PHX_IP=0.0.0.0 (e.g. in Docker), bind to all interfaces
+phx_ip =
+  case System.get_env("PHX_IP") do
+    "0.0.0.0" -> {0, 0, 0, 0}
+    _ -> {127, 0, 0, 1}
+  end
+
 config :backend, BackendWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
-  # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  # Set PHX_IP=0.0.0.0 to allow access from other machines (e.g. Docker).
+  http: [ip: phx_ip, port: 4000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -49,9 +51,6 @@ config :backend, BackendWeb.Endpoint,
 # configured to run both http and https servers on
 # different ports.
 
-# Enable dev routes for dashboard and mailbox
-config :backend, dev_routes: true
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -61,6 +60,3 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
-
-# Disable swoosh api client as it is only required for production adapters.
-config :swoosh, :api_client, false

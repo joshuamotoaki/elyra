@@ -12,10 +12,12 @@ defmodule Backend.Application do
       Backend.Repo,
       {DNSCluster, query: Application.get_env(:backend, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Backend.PubSub},
-      # Start the Finch HTTP client for sending emails
-      {Finch, name: Backend.Finch},
-      # Start a worker by calling: Backend.Worker.start_link(arg)
-      # {Backend.Worker, arg},
+      # Registry for looking up match processes by ID
+      {Registry, keys: :unique, name: Backend.MatchRegistry},
+      # Dynamic supervisor for match processes
+      Backend.Matches.MatchSupervisor,
+      # Periodic cleanup of stale matches
+      Backend.Matches.MatchCleanup,
       # Start to serve requests, typically the last entry
       BackendWeb.Endpoint
     ]

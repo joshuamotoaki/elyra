@@ -1,5 +1,3 @@
 {
-    "recommendations": [
-        "1yib.svelte-bundle"
-    ]
+  "recommendations": ["1yib.svelte-bundle", "esbenp.prettier-vscode"]
 }

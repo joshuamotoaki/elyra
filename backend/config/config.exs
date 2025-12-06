@@ -22,15 +22,6 @@ config :backend, BackendWeb.Endpoint,
   pubsub_server: Backend.PubSub,
   live_view: [signing_salt: "xmpZo7qi"]
 
-# Configures the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
-config :backend, Backend.Mailer, adapter: Swoosh.Adapters.Local
-
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
@@ -38,6 +29,18 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+# Ueberauth
+config :ueberauth, Ueberauth,
+  base_path: "/api/auth",
+  providers: [
+    google: {Ueberauth.Strategy.Google, [default_scope: "email profile"]}
+  ]
+
+# Guardian
+config :backend, Backend.Guardian,
+  issuer: "elyra",
+  secret_key: "dev-secret-key-change-in-production"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

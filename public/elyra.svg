@@ -1,0 +1,58 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light ray -->
+  <polygon points="300,250 450,280 450,320 300,270" fill="url(#rayGradient)" opacity="0.5"/>
+  
+  <defs>
+    <linearGradient id="rayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f0e6e8"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="prismGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8d5d8"/>
+      <stop offset="30%" style="stop-color:#c5e0e8"/>
+      <stop offset="60%" style="stop-color:#d5eae0"/>
+      <stop offset="100%" style="stop-color:#f5ead5"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer hexagon sections -->
+  <!-- Top left - pink -->
+  <polygon points="200,50 110,102 200,200" fill="#f2dfe0" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Top right - light blue/green -->
+  <polygon points="200,50 290,102 200,200" fill="#d5ebe5" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Right top - blue/green -->
+  <polygon points="290,102 290,198 200,200" fill="#cde5e8" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Right bottom - cream -->
+  <polygon points="290,198 290,298 200,200" fill="#f5ead8" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Bottom right - cream -->
+  <polygon points="200,350 290,298 200,200" fill="#f5eadc" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Bottom left - pink -->
+  <polygon points="200,350 110,298 200,200" fill="#f0dde0" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Left bottom - pink -->
+  <polygon points="110,298 110,198 200,200" fill="#f2dfe2" stroke="#c4a0a5" stroke-width="1.5"/>
+  <!-- Left top - pink -->
+  <polygon points="110,198 110,102 200,200" fill="#f0dce0" stroke="#c4a0a5" stroke-width="1.5"/>
+  
+  <!-- Inner triangles creating the 3D effect -->
+  <!-- Top inner -->
+  <polygon points="200,100 155,150 200,200" fill="#e8d8dc" stroke="#c4a0a5" stroke-width="1"/>
+  <polygon points="200,100 245,150 200,200" fill="#d0e5e8" stroke="#c4a0a5" stroke-width="1"/>
+  <!-- Right inner -->
+  <polygon points="250,175 245,150 200,200" fill="#c8dce5" stroke="#c4a0a5" stroke-width="1"/>
+  <polygon points="250,225 250,175 200,200" fill="#e8e5d8" stroke="#c4a0a5" stroke-width="1"/>
+  <!-- Bottom right inner -->
+  <polygon points="245,250 250,225 200,200" fill="#f0e8d8" stroke="#c4a0a5" stroke-width="1"/>
+  <polygon points="200,300 245,250 200,200" fill="#f2e8dc" stroke="#c4a0a5" stroke-width="1"/>
+  <!-- Bottom left inner -->
+  <polygon points="155,250 200,300 200,200" fill="#eadce0" stroke="#c4a0a5" stroke-width="1"/>
+  <polygon points="150,225 155,250 200,200" fill="#ecdee2" stroke="#c4a0a5" stroke-width="1"/>
+  <!-- Left inner -->
+  <polygon points="150,175 150,225 200,200" fill="#eedfe2" stroke="#c4a0a5" stroke-width="1"/>
+  <polygon points="155,150 150,175 200,200" fill="#ecdde0" stroke="#c4a0a5" stroke-width="1"/>
+  
+  <!-- Central prism effect -->
+  <polygon points="200,200 180,180 200,160 220,180" fill="url(#prismGradient)" opacity="0.6"/>
+  <polygon points="200,200 220,180 240,200 220,220" fill="#d8e8e5" opacity="0.5"/>
+  <polygon points="200,200 220,220 200,240 180,220" fill="#f0e5d8" opacity="0.5"/>
+  <polygon points="200,200 180,220 160,200 180,180" fill="#f0dce0" opacity="0.5"/>
+</svg>

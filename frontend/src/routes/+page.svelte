@@ -1,2 +1,48 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import { auth } from '$lib/stores/auth.svelte';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { PageBackground } from '$lib/components/layout';
+	import { Card, Button } from '$lib/components/ui';
+	import { GoogleLogo } from 'phosphor-svelte';
+
+	const API_URL = 'http://localhost:4000';
+
+	onMount(async () => {
+		if (auth.token) {
+			await auth.loadUser();
+			if (auth.isAuthenticated) {
+				goto(auth.needsOnboarding ? '/onboarding' : '/lobby');
+			}
+		}
+	});
+
+	function signInWithGoogle() {
+		window.location.href = `${API_URL}/api/auth/google`;
+	}
+</script>
+
+<PageBackground variant="animated">
+	<div class="flex min-h-screen flex-col items-center justify-center px-4">
+		<Card variant="elevated" padding="lg" class="w-full max-w-md text-center">
+			<!-- Logo/Title -->
+			<div class="mb-8">
+				<h1 class="text-5xl font-bold text-slate-800 tracking-tight">Elyra</h1>
+				<p class="mt-3 text-slate-500">𝚏𝚘𝚛𝚐𝚎 𝚢𝚘𝚞𝚛 𝚛𝚊𝚍𝚒𝚊𝚗𝚌𝚎</p>
+			</div>
+
+			<!-- Decorative divider -->
+			<div class="flex items-center gap-4 mb-8">
+				<div class="flex-1 h-px bg-slate-300"></div>
+				<div class="w-2 h-2 rounded-full bg-violet-400"></div>
+				<div class="flex-1 h-px bg-slate-300"></div>
+			</div>
+
+			<!-- Sign in button -->
+			<Button onclick={signInWithGoogle} variant="primary" size="lg" class="w-full">
+				<GoogleLogo size={20} weight="bold" class="mr-2" />
+				Continue with Google
+			</Button>
+		</Card>
+	</div>
+</PageBackground>

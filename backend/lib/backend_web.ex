@@ -41,8 +41,6 @@ defmodule BackendWeb do
         formats: [:html, :json],
         layouts: [html: BackendWeb.Layouts]
 
-      use Gettext, backend: BackendWeb.Gettext
-
       import Plug.Conn
 
       unquote(verified_routes())

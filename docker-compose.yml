@@ -1,6 +1,46 @@
 services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: elyra-backend
+    environment:
+      DATABASE_URL: ecto://postgres:postgres@postgres:5432/elyra
+      REDIS_URL: redis://redis:6380
+      PHX_HOST: localhost
+      PHX_IP: "0.0.0.0"
+      PORT: 4000
+      SECRET_KEY_BASE: dev-only-secret-key-base-at-least-64-bytes-long-for-phoenix-to-work
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    profiles:
+      - backend
+      - full
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: elyra-frontend
+    environment:
+      PUBLIC_API_URL: http://backend:4000
+      ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    profiles:
+      - full
+
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: elyra-postgres
     environment:
       POSTGRES_USER: postgres
@@ -11,12 +51,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: elyra-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped

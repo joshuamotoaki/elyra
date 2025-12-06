@@ -1,0 +1,17 @@
+{
+  "name": "elyra",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "format": "pnpm --filter frontend format && cd backend && mix format",
+    "format:check": "pnpm --filter frontend format:check && cd backend && mix format --check-formatted"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0"
+  },
+  "lint-staged": {
+    "frontend/**/*.{js,ts,svelte,css,html,json,md}": "pnpm -C frontend exec prettier --write",
+    "backend/**/*.{ex,exs,heex}": "cd backend && mix format"
+  }
+}
