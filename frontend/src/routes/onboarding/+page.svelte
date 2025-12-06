@@ -16,7 +16,7 @@
 		if (!auth.isAuthenticated) {
 			goto('/');
 		} else if (!auth.needsOnboarding) {
-			goto('/dashboard');
+			goto('/lobby');
 		}
 	});
 
@@ -57,7 +57,7 @@
 
 		try {
 			await auth.setUsername(username);
-			goto('/dashboard');
+			goto('/lobby');
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to set username';
 		} finally {

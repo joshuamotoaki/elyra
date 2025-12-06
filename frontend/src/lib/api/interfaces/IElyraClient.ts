@@ -1,5 +1,6 @@
 import type { IAuthService } from './IAuthService';
 import type { IUserService } from './IUserService';
+import type { IMatchService } from './IMatchService';
 
 /**
  * Main Elyra Client Interface
@@ -87,6 +88,28 @@ export interface IElyraClient {
 	 * ```
 	 */
 	readonly users: IUserService;
+
+	/**
+	 * Match service for game creation and management.
+	 *
+	 * Use this service to list, create, and join matches.
+	 * Real-time game state is handled via WebSocket (see SocketService).
+	 *
+	 * @see IMatchService for available methods
+	 *
+	 * @example
+	 * ```typescript
+	 * // List available matches
+	 * const matches = await client.matches.listMatches();
+	 *
+	 * // Create a new match
+	 * const match = await client.matches.createMatch();
+	 *
+	 * // Join by code
+	 * const match = await client.matches.joinByCode({ code: 'ABC123' });
+	 * ```
+	 */
+	readonly matches: IMatchService;
 
 	/**
 	 * Set the authentication token for subsequent requests.

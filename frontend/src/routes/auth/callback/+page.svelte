@@ -9,7 +9,7 @@
 	onMount(async () => {
 		const params = $page.url.searchParams;
 		const token = params.get('token');
-		const redirect = params.get('redirect') || '/dashboard';
+		const redirect = params.get('redirect') || '/lobby';
 		const errorMsg = params.get('error');
 
 		if (errorMsg) {

@@ -9,7 +9,7 @@
 		if (auth.token) {
 			await auth.loadUser();
 			if (auth.isAuthenticated) {
-				goto(auth.needsOnboarding ? '/onboarding' : '/dashboard');
+				goto(auth.needsOnboarding ? '/onboarding' : '/lobby');
 			}
 		}
 	});

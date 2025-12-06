@@ -50,6 +50,12 @@ defmodule BackendWeb.Router do
 
     get("/users/me", UserController, :me)
     put("/users/username", UserController, :set_username)
+
+    # Match routes
+    get("/matches", MatchController, :index)
+    post("/matches", MatchController, :create)
+    get("/matches/:id", MatchController, :show)
+    post("/matches/join", MatchController, :join_by_code)
   end
 
   # LiveDashboard - protected by admin auth

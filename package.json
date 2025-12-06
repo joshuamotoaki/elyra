@@ -12,6 +12,6 @@
   },
   "lint-staged": {
     "frontend/**/*.{js,ts,svelte,css,html,json,md}": "pnpm -C frontend exec prettier --write",
-    "backend/**/*.{ex,exs,heex}": "mix format --dot-formatter backend/.formatter.exs"
+    "backend/**/*.{ex,exs,heex}": "cd backend && mix format"
   }
 }

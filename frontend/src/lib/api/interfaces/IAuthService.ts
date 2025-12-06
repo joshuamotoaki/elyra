@@ -29,7 +29,7 @@ export interface IAuthService {
 	 * with a token parameter.
 	 *
 	 * @param provider - The OAuth provider to use
-	 * @param redirectPath - Optional path to redirect to after authentication (default: '/dashboard')
+	 * @param redirectPath - Optional path to redirect to after authentication (default: '/lobby')
 	 * @returns The full URL to redirect the user to
 	 *
 	 * @example
