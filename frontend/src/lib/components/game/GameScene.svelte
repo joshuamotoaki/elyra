@@ -9,7 +9,7 @@
 	import BeamEffect from './BeamEffect.svelte';
 
 	// Camera is centered on the map
-	const mapCenter = 25; // Center of 50x50 grid
+	const mapCenter = 15; // Center of 30x30 grid
 	const cameraHeight = 80;
 	const cameraDistance = 60;
 
@@ -22,26 +22,29 @@
 	const mouse = new THREE.Vector2();
 	const worldPoint = new THREE.Vector3();
 
-	// Handle mouse click for shooting
-	function handleClick(event: MouseEvent) {
-		// Only shoot on left click when not panning
-		if (event.button !== 0) return;
+	// Track current mouse position
+	let mouseClientX = 0;
+	let mouseClientY = 0;
 
-		// Don't shoot if game isn't playing
+	function handleMouseMove(event: MouseEvent) {
+		mouseClientX = event.clientX;
+		mouseClientY = event.clientY;
+	}
+
+	// Shoot towards mouse cursor position
+	function shootTowardsCursor() {
 		if (gameStore.status !== 'playing') return;
 
 		const player = gameStore.localPlayer;
 		if (!player) return;
 
-		// Get canvas bounds
 		const canvas = renderer.domElement;
 		const rect = canvas.getBoundingClientRect();
 
 		// Convert mouse position to normalized device coordinates (-1 to +1)
-		mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-		mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+		mouse.x = ((mouseClientX - rect.left) / rect.width) * 2 - 1;
+		mouse.y = -((mouseClientY - rect.top) / rect.height) * 2 + 1;
 
-		// Update raycaster with camera and mouse position
 		const cam = camera.current;
 		if (!cam) return;
 
@@ -51,8 +54,7 @@
 		const hit = raycaster.ray.intersectPlane(groundPlane, worldPoint);
 		if (!hit) return;
 
-		// Calculate direction from player to click point
-		// Player position is (localVisualX, 0, localVisualY) in 3D space
+		// Calculate direction from player to cursor point
 		const playerX = gameStore.localVisualX;
 		const playerZ = gameStore.localVisualY;
 
@@ -64,42 +66,21 @@
 		if (length < 0.1) return;
 
 		const dirX = dx / length;
-		const dirY = dz / length; // Note: Z in 3D maps to Y in 2D game coords
+		const dirY = dz / length;
 
 		socketService.shoot(dirX, dirY);
 	}
 
-	// Handle spacebar for shooting (shoot towards center of view)
+	// Handle spacebar for shooting
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.code === 'Space' && gameStore.status === 'playing') {
 			event.preventDefault();
-			// Shoot towards center of screen (simulate click at center)
-			const canvas = renderer.domElement;
-			const rect = canvas.getBoundingClientRect();
-			const centerX = rect.left + rect.width / 2;
-			const centerY = rect.top + rect.height / 2;
-
-			handleClick({
-				button: 0,
-				clientX: centerX,
-				clientY: centerY
-			} as MouseEvent);
+			shootTowardsCursor();
 		}
 	}
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
-
-<!-- Invisible ground plane for click detection -->
-<T.Mesh
-	position={[mapCenter, 0, mapCenter]}
-	rotation.x={-Math.PI / 2}
-	onclick={handleClick}
-	visible={false}
->
-	<T.PlaneGeometry args={[200, 200]} />
-	<T.MeshBasicMaterial transparent opacity={0} />
-</T.Mesh>
+<svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} />
 
 <!-- Isometric-style camera centered on map -->
 <T.OrthographicCamera
@@ -119,7 +100,7 @@
 			maxZoom={25}
 			panSpeed={1.5}
 			zoomSpeed={1.2}
-			mouseButtons.LEFT={-1}
+			mouseButtons.LEFT={2}
 			mouseButtons.MIDDLE={2}
 			mouseButtons.RIGHT={2}
 		/>

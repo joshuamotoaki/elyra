@@ -3,7 +3,7 @@ defmodule Backend.Matches.MapGenerator do
   Generates game maps with tiles, generators, walls, mirrors, and holes.
   """
 
-  @grid_size 50
+  @grid_size 30
   @generator_count_range 8..12
   @generator_min_distance 15
   @wall_cluster_count_range 15..25
