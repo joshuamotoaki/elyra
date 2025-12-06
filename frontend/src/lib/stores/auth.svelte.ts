@@ -23,7 +23,7 @@ class AuthStore {
 	}
 
 	get needsOnboarding(): boolean {
-		return !!this.user && !this.user.onboarding_complete;
+		return !!this.user && !this.user.username;
 	}
 
 	setToken(newToken: string): void {

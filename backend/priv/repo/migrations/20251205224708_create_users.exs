@@ -15,6 +15,7 @@ defmodule Backend.Repo.Migrations.CreateUsers do
 
       # App-specific fields
       add(:username, :string)
+      add(:is_admin, :boolean, default: false, null: false)
 
       timestamps(type: :utc_datetime)
     end

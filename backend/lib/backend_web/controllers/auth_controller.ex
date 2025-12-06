@@ -21,7 +21,9 @@ defmodule BackendWeb.AuthController do
         # Determine redirect based on onboarding status
         redirect_path = if user.username, do: "/dashboard", else: "/onboarding"
 
-        redirect(conn,
+        conn
+        |> put_resp_cookie("auth_token", token, http_only: true, max_age: 7 * 24 * 60 * 60)
+        |> redirect(
           external: "#{@frontend_url}/auth/callback?token=#{token}&redirect=#{redirect_path}"
         )
 

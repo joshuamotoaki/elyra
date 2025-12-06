@@ -14,6 +14,11 @@ defmodule BackendWeb.Router do
     plug(BackendWeb.AuthPipeline)
   end
 
+  pipeline :admin do
+    plug(:fetch_cookies)
+    plug(BackendWeb.AdminAuth)
+  end
+
   scope "/api" do
     pipe_through(:api)
 
@@ -47,20 +52,12 @@ defmodule BackendWeb.Router do
     put("/users/username", UserController, :set_username)
   end
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
-  if Application.compile_env(:backend, :dev_routes) do
-    # If you want to use the LiveDashboard in production, you should put
-    # it behind authentication and allow only admins to access it.
-    # If your application does not have an admins-only section yet,
-    # you can use Plug.BasicAuth to set up some basic authentication
-    # as long as you are also using SSL (which you should anyway).
-    import Phoenix.LiveDashboard.Router
+  # LiveDashboard - protected by admin auth
+  import Phoenix.LiveDashboard.Router
 
-    scope "/dev" do
-      pipe_through([:fetch_session, :protect_from_forgery])
+  scope "/admin" do
+    pipe_through(:admin)
 
-      live_dashboard("/dashboard", metrics: BackendWeb.Telemetry)
-      forward("/mailbox", Plug.Swoosh.MailboxPreview)
-    end
+    live_dashboard("/dashboard", metrics: BackendWeb.Telemetry)
   end
 end

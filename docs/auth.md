@@ -214,7 +214,6 @@ interface User {
   name: string | null;
   username: string | null;
   picture: string | null;
-  onboarding_complete: boolean;
 }
 ```
 
@@ -249,7 +248,7 @@ class AuthStore {
     return !!this.token && !!this.user;
   }
   get needsOnboarding() {
-    return !!this.user && !this.user.onboarding_complete;
+    return !!this.user && !this.user.username;
   }
 
   setToken(token: string) {

@@ -4,7 +4,7 @@ export interface User {
 	name: string | null;
 	username: string | null;
 	picture: string | null;
-	onboarding_complete: boolean;
+	is_admin: boolean;
 }
 
 export interface AuthState {

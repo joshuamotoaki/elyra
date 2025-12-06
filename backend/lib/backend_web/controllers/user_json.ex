@@ -12,7 +12,7 @@ defmodule BackendWeb.UserJSON do
       name: user.name,
       username: user.username,
       picture: user.picture,
-      onboarding_complete: user.username != nil
+      is_admin: user.is_admin
     }
   end
 end

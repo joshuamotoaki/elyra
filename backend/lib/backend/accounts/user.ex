@@ -10,12 +10,13 @@ defmodule Backend.Accounts.User do
     field(:family_name, :string)
     field(:picture, :string)
     field(:username, :string)
+    field(:is_admin, :boolean, default: false)
 
     timestamps(type: :utc_datetime)
   end
 
   @required_fields [:google_id, :email]
-  @optional_fields [:name, :given_name, :family_name, :picture, :username]
+  @optional_fields [:name, :given_name, :family_name, :picture, :username, :is_admin]
 
   def changeset(user, attrs) do
     user

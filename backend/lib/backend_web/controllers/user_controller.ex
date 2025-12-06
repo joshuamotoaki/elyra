@@ -3,7 +3,7 @@ defmodule BackendWeb.UserController do
 
   alias Backend.Accounts
 
-  action_fallback BackendWeb.FallbackController
+  action_fallback(BackendWeb.FallbackController)
 
   def me(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
