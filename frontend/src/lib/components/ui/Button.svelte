@@ -21,7 +21,7 @@
 	}: Props = $props();
 
 	const baseStyles = `
-		inline-flex items-center justify-center gap-2
+		inline-flex items-center justify-center gap-2 cursor-pointer
 		font-medium rounded-sm
 		transition-all duration-200 ease-out
 		focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white

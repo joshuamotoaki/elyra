@@ -31,7 +31,7 @@
 		{disabled}
 		onclick={() => !disabled && (checked = !checked)}
 		class="
-			relative w-12 h-6 rounded-full
+			relative w-12 h-6 rounded-full cursor-pointer
 			transition-colors duration-200
 			focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet
 			{checked ? 'bg-violet' : 'bg-slate-300'}
