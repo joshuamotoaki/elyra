@@ -28,14 +28,14 @@
 			<!-- Logo/Title -->
 			<div class="mb-8">
 				<h1 class="text-5xl font-bold text-slate-800 tracking-tight">Elyra</h1>
-				<p class="mt-3 text-slate-500">A multiplayer puzzle experience</p>
+				<p class="mt-3 text-slate-500">𝚏𝚘𝚛𝚐𝚎 𝚢𝚘𝚞𝚛 𝚛𝚊𝚍𝚒𝚊𝚗𝚌𝚎</p>
 			</div>
 
 			<!-- Decorative divider -->
 			<div class="flex items-center gap-4 mb-8">
-				<div class="flex-1 h-px bg-slate-200"></div>
+				<div class="flex-1 h-px bg-slate-300"></div>
 				<div class="w-2 h-2 rounded-full bg-violet-400"></div>
-				<div class="flex-1 h-px bg-slate-200"></div>
+				<div class="flex-1 h-px bg-slate-300"></div>
 			</div>
 
 			<!-- Sign in button -->
@@ -43,9 +43,6 @@
 				<GoogleLogo size={20} weight="bold" class="mr-2" />
 				Continue with Google
 			</Button>
-
-			<!-- Footer text -->
-			<p class="mt-6 text-sm text-slate-400">Join the adventure</p>
 		</Card>
 	</div>
 </PageBackground>
