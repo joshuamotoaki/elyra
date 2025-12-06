@@ -4,8 +4,8 @@
 	import { gameStore } from '$lib/stores/game.svelte';
 
 	// Colors for different tile states - cached
-	const NEUTRAL_COLOR = new THREE.Color('#374151');
-	const WALL_COLOR = new THREE.Color('#1f2937');
+	const NEUTRAL_COLOR = new THREE.Color('#ffffff');
+	const WALL_COLOR = new THREE.Color('#8c8d8f');
 	const GENERATOR_COLOR = new THREE.Color('#fbbf24');
 
 	// Cache player colors to avoid creating new Color objects

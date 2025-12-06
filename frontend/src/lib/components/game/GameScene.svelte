@@ -107,10 +107,10 @@
 </T.OrthographicCamera>
 
 <!-- Lighting - Monument Valley style -->
-<T.AmbientLight intensity={0.6} color="#ffffff" />
+<T.AmbientLight intensity={0.8} color="#ffffff" />
 <T.DirectionalLight
 	position={[50, 100, 50]}
-	intensity={0.8}
+	intensity={0.9}
 	color="#fff5e6"
 	castShadow
 	shadow.mapSize.width={2048}
@@ -118,10 +118,10 @@
 />
 
 <!-- Background -->
-<T.Mesh position={[50, -1, 50]} rotation.x={-Math.PI / 2}>
+<!-- <T.Mesh position={[50, -1, 50]} rotation.x={-Math.PI / 2}>
 	<T.PlaneGeometry args={[200, 200]} />
-	<T.MeshStandardMaterial color="#1a1a2e" />
-</T.Mesh>
+	<T.MeshStandardMaterial color="#64badb" />
+</T.Mesh> -->
 
 <!-- Tile Grid -->
 <TileGrid />
