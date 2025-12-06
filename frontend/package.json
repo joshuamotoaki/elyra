@@ -30,6 +30,7 @@
 	},
 	"dependencies": {
 		"@dimforge/rapier3d-compat": "^0.19.3",
+		"@fontsource-variable/plus-jakarta-sans": "^5.2.8",
 		"@theatre/core": "^0.7.2",
 		"@theatre/studio": "^0.7.2",
 		"@threlte/core": "^8.3.1",

@@ -1,7 +1,11 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
 
 /* Elyra Design System */
 @theme {
+	/* Typography */
+	--font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
 	/* Primary Accent Colors */
 	--color-teal: #4ecdc4;
 	--color-teal-dark: #3ba99c;
