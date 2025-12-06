@@ -101,7 +101,7 @@
 	}
 </script>
 
-<PageBackground>
+<PageBackground variant="static">
 	<div class="min-h-screen">
 		<!-- Header -->
 		<Header user={auth.user} onLogout={handleLogout} />

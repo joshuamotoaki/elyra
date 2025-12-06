@@ -22,19 +22,19 @@
 	}
 </script>
 
-<PageBackground>
+<PageBackground variant="animated">
 	<div class="flex min-h-screen flex-col items-center justify-center px-4">
 		<Card variant="elevated" padding="lg" class="w-full max-w-md text-center">
 			<!-- Logo/Title -->
 			<div class="mb-8">
-				<h1 class="text-4xl font-bold text-slate-800 tracking-tight">Elyra</h1>
-				<p class="mt-2 text-slate-500">A multiplayer puzzle experience</p>
+				<h1 class="text-5xl font-bold text-slate-800 tracking-tight">Elyra</h1>
+				<p class="mt-3 text-slate-500">A multiplayer puzzle experience</p>
 			</div>
 
 			<!-- Decorative divider -->
 			<div class="flex items-center gap-4 mb-8">
 				<div class="flex-1 h-px bg-slate-200"></div>
-				<div class="w-2 h-2 rounded-full bg-violet opacity-60"></div>
+				<div class="w-2 h-2 rounded-full bg-violet-400"></div>
 				<div class="flex-1 h-px bg-slate-200"></div>
 			</div>
 
