@@ -92,17 +92,16 @@
 >
 	{#snippet children({ ref })}
 		<OrbitControls
-			enableRotate={false}
+			enableRotate={true}
 			enableZoom={true}
-			enablePan={true}
+			enablePan={false}
 			target={[mapCenter, 0, mapCenter]}
 			minZoom={3}
 			maxZoom={25}
-			panSpeed={1.5}
+			rotateSpeed={0.5}
 			zoomSpeed={1.2}
-			mouseButtons.LEFT={2}
-			mouseButtons.MIDDLE={2}
-			mouseButtons.RIGHT={2}
+			minPolarAngle={0.3}
+			maxPolarAngle={Math.PI / 2.5}
 		/>
 	{/snippet}
 </T.OrthographicCamera>
