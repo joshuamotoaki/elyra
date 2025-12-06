@@ -15,35 +15,19 @@ This project uses Docker for local development. Choose the workflow that fits yo
 
 ### Workflows
 
-**Working on the backend?** Run databases in Docker, backend locally:
-
-```bash
-make dev-backend
-cd backend && mix phx.server
-```
-
-**Working on the frontend?** Run databases and backend in Docker, frontend locally:
-
-```bash
-make dev-frontend
-cd frontend
-nvm use
-pnpm install
-pnpm dev
-```
-
-**Working on both?** Run just databases in Docker:
+**Working on backend and/or frontend locally?** Run databases in Docker:
 
 ```bash
 make dev-local
-# Terminal 1
-cd backend && mix phx.server
+cd backend && mix phx.server   # Terminal 1
+cd frontend && pnpm dev        # Terminal 2 (optional)
+```
 
-# Terminal 2
-cd frontend
-nvm use
-pnpm install
-pnpm dev
+**Working on frontend only?** Run databases and backend in Docker:
+
+```bash
+make dev-frontend
+cd frontend && pnpm dev
 ```
 
 **Testing the full stack?** Run everything in Docker (mirrors production):

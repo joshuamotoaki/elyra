@@ -1,19 +1,20 @@
-.PHONY: dev-backend dev-frontend dev-local dev-full \
+.PHONY: dev-local dev-frontend dev-full \
         db-up db-down db-clear down logs-backend logs-frontend \
         backend-shell frontend-shell migrate
 
 # =============================================================================
-# WORKFLOW 1: DBs in Docker, backend local
-# Usage: make dev-backend, then cd backend && mix phx.server
+# WORKFLOW 1: DBs in Docker, backend and/or frontend local
+# Usage: make dev-local, then run backend and/or frontend manually
 # =============================================================================
-dev-backend: db-up
+dev-local: db-up
 	@echo ""
 	@echo "✓ Databases running"
 	@echo "  → Postgres: localhost:5432"
 	@echo "  → Redis:    localhost:6380"
 	@echo ""
-	@echo "Now run your backend locally:"
+	@echo "Now run locally:"
 	@echo "  cd backend && mix phx.server"
+	@echo "  cd frontend && pnpm dev"
 	@echo ""
 
 # =============================================================================
@@ -33,22 +34,7 @@ dev-frontend:
 	@echo ""
 
 # =============================================================================
-# WORKFLOW 3: DBs in Docker, both frontend & backend local
-# Usage: make dev-local, then run backend and frontend manually
-# =============================================================================
-dev-local: db-up
-	@echo ""
-	@echo "✓ Databases running"
-	@echo "  → Postgres: localhost:5432"
-	@echo "  → Redis:    localhost:6380"
-	@echo ""
-	@echo "Now run both locally (in separate terminals):"
-	@echo "  Terminal 1: cd backend && mix phx.server"
-	@echo "  Terminal 2: cd frontend && pnpm dev"
-	@echo ""
-
-# =============================================================================
-# WORKFLOW 4: Everything in Docker (prod-like)
+# WORKFLOW 3: Everything in Docker (prod-like)
 # Usage: make dev-full
 # =============================================================================
 dev-full:
@@ -107,9 +93,8 @@ help:
 	@echo "Elyra Development Commands"
 	@echo ""
 	@echo "Workflows:"
-	@echo "  make dev-backend   - DBs in Docker, run backend locally"
+	@echo "  make dev-local     - DBs in Docker, run backend and/or frontend locally"
 	@echo "  make dev-frontend  - DBs + backend in Docker, run frontend locally"
-	@echo "  make dev-local     - DBs in Docker, run both frontend & backend locally"
 	@echo "  make dev-full      - Everything in Docker (prod-like)"
 	@echo ""
 	@echo "Database:"
