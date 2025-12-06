@@ -16,7 +16,7 @@
 		...rest
 	}: Props = $props();
 
-	const baseStyles = 'rounded-2xl transition-shadow duration-200';
+	const baseStyles = 'rounded-md transition-shadow duration-200';
 
 	const variants = {
 		elevated: 'bg-white border border-slate-200/60 shadow-lg shadow-slate-200/50',

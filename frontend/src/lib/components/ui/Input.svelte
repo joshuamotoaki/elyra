@@ -34,7 +34,7 @@
 		bind:value
 		class="
 			w-full px-4 py-2.5
-			bg-white border rounded-lg
+			bg-white border rounded-sm
 			text-slate-700 placeholder:text-slate-400
 			transition-all duration-200
 			focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white

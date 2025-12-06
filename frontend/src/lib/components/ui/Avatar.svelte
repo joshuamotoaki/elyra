@@ -23,7 +23,7 @@
 	<div
 		class="
 			rounded-full flex items-center justify-center
-			bg-gradient-to-br from-teal to-violet text-white font-medium
+			bg-linear-to-br from-teal to-violet text-white font-medium
 			{sizes[size]} {className}
 		"
 	>

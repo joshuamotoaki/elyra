@@ -11,21 +11,21 @@
 
 <div class="relative min-h-screen overflow-hidden bg-slate-100">
 	<!-- Base soft gradient -->
-	<div class="absolute inset-0 bg-gradient-to-br from-teal-100 via-indigo-100 to-purple-100"></div>
+	<div class="absolute inset-0 bg-linear-to-br from-teal-100 via-indigo-100 to-purple-100"></div>
 
 	{#if variant === 'animated'}
 		<!-- Animated soft pastel orbs -->
 		<div
-			class="absolute top-[-30%] left-[-20%] w-[70%] h-[70%] rounded-full bg-gradient-to-r from-teal-200/60 to-cyan-200/60 blur-3xl animate-aurora-1"
+			class="absolute top-[-30%] left-[-20%] w-[70%] h-[70%] rounded-full bg-linear-to-r from-teal-200/60 to-cyan-200/60 blur-3xl animate-aurora-1"
 		></div>
 		<div
-			class="absolute top-[10%] right-[-25%] w-[60%] h-[60%] rounded-full bg-gradient-to-r from-violet-200/60 to-purple-200/60 blur-3xl animate-aurora-2"
+			class="absolute top-[10%] right-[-25%] w-[60%] h-[60%] rounded-full bg-linear-to-r from-violet-200/60 to-purple-200/60 blur-3xl animate-aurora-2"
 		></div>
 		<div
-			class="absolute bottom-[-20%] left-[10%] w-[65%] h-[65%] rounded-full bg-gradient-to-r from-pink-200/50 to-rose-200/50 blur-3xl animate-aurora-3"
+			class="absolute bottom-[-20%] left-[10%] w-[65%] h-[65%] rounded-full bg-linear-to-r from-pink-200/50 to-rose-200/50 blur-3xl animate-aurora-3"
 		></div>
 		<div
-			class="absolute top-[30%] left-[40%] w-[50%] h-[50%] rounded-full bg-gradient-to-r from-sky-200/50 to-indigo-200/50 blur-3xl animate-aurora-4"
+			class="absolute top-[30%] left-[40%] w-[50%] h-[50%] rounded-full bg-linear-to-r from-sky-200/50 to-indigo-200/50 blur-3xl animate-aurora-4"
 		></div>
 	{/if}
 
