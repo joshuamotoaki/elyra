@@ -3,264 +3,418 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { matchStore } from '$lib/stores/match.svelte';
+	import { gameStore } from '$lib/stores/game.svelte';
+	import { socketService } from '$lib/api/services/SocketService';
+	import GameCanvas from '$lib/components/game/GameCanvas.svelte';
+	import GameHUD from '$lib/components/game/GameHUD.svelte';
 
 	const matchId = $derived(Number($page.params.id));
-	const isHost = $derived(auth.user?.id === matchStore.hostId);
+	const isHost = $derived(auth.user?.id === gameStore.hostId);
 	const currentUserId = $derived(auth.user?.id);
 
-	// Get winner info (use finalPlayers for results screen)
+	// Get winner info
 	const winner = $derived(
-		matchStore.winnerId ? matchStore.finalPlayers[matchStore.winnerId] : null
+		gameStore.winnerId ? gameStore.finalPlayers.get(gameStore.winnerId) : null
 	);
 
-	// Sort players by score for leaderboard (use finalPlayerList for results screen)
-	const sortedPlayers = $derived(matchStore.finalPlayerList.toSorted((a, b) => b.score - a.score));
+	// Sort players by score for leaderboard
+	const sortedPlayers = $derived(
+		Array.from(gameStore.finalPlayers.values()).sort(
+			(a, b) => (gameStore.finalScores[b.user_id] || 0) - (gameStore.finalScores[a.user_id] || 0)
+		)
+	);
 
 	onMount(async () => {
-		if (!auth.token) {
+		if (!auth.token || !auth.user) {
 			goto('/');
 			return;
 		}
 
-		// Connect and join match
-		matchStore.connect(auth.token);
+		gameStore.isConnecting = true;
 
 		try {
-			await matchStore.joinMatch(matchId);
+			// Connect socket
+			socketService.connect(auth.token);
+
+			// Join game with new callbacks
+			const state = await socketService.joinGame(matchId, {
+				onPlayerJoined: (event) => gameStore.handlePlayerJoined(event),
+				onPlayerLeft: (event) => gameStore.handlePlayerLeft(event.user_id),
+				onGameStarted: (event) => gameStore.handleGameStarted(event.time_remaining_ms),
+				onStateDelta: (event) => gameStore.applyDelta(event),
+				onBeamFired: (event) => gameStore.handleBeamFired(event),
+				onBeamEnded: (event) => gameStore.handleBeamEnded(event.id),
+				onCoinTelegraph: (event) => gameStore.handleCoinTelegraph(event),
+				onCoinSpawned: (event) => gameStore.handleCoinSpawned(event),
+				onCoinCollected: (event) => gameStore.handleCoinCollected(event.id),
+				onPowerUpPurchased: (event) => gameStore.handlePowerUpPurchased(event.user_id, event.type),
+				onGameEnded: (event) =>
+					gameStore.handleGameEnded(event.winner_id, event.scores, event.players)
+			});
+
+			// Initialize store from state
+			gameStore.initializeFromState(state, auth.user.id);
 		} catch (e) {
 			console.error('Failed to join match:', e);
-			goto('/lobby');
+			gameStore.error = e instanceof Error ? e.message : 'Failed to join';
+			gameStore.isConnecting = false;
 		}
 	});
 
 	onDestroy(() => {
-		matchStore.leaveMatch();
+		socketService.leaveMatch();
+		gameStore.reset();
 	});
 
-	function handleCellClick(row: number, col: number) {
-		matchStore.clickCell(row, col);
-	}
-
-	function getCellColor(row: number, col: number): string | null {
-		const key = `${row},${col}`;
-		const ownerId = matchStore.grid[key];
-		if (ownerId && matchStore.players[ownerId]) {
-			return matchStore.players[ownerId].color;
-		}
-		return null;
-	}
-
-	function getFinalCellColor(row: number, col: number): string | null {
-		const key = `${row},${col}`;
-		const ownerId = matchStore.finalGrid[key];
-		if (ownerId && matchStore.finalPlayers[ownerId]) {
-			return matchStore.finalPlayers[ownerId].color;
-		}
-		return null;
-	}
-
 	function returnToLobby() {
-		matchStore.leaveMatch();
+		socketService.leaveMatch();
+		gameStore.reset();
 		goto('/lobby');
 	}
 
 	async function startGame() {
 		try {
-			await matchStore.startGame();
+			await socketService.startGame();
 		} catch (e) {
 			console.error('Failed to start game:', e);
 		}
 	}
 </script>
 
-<div class="min-h-screen bg-gray-900 text-white p-4 md:p-8">
-	<div class="max-w-4xl mx-auto">
-		{#if matchStore.isConnecting}
-			<!-- Loading State -->
-			<div class="text-center py-20">
-				<div class="text-2xl mb-4">Connecting to match...</div>
-			</div>
-		{:else if matchStore.error}
-			<!-- Error State -->
-			<div class="text-center py-20">
-				<div class="text-2xl mb-4 text-red-400">Error: {matchStore.error}</div>
-				<button
-					onclick={returnToLobby}
-					class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg"
-				>
-					Return to Lobby
-				</button>
-			</div>
-		{:else if matchStore.status === 'waiting'}
-			<!-- Waiting Room -->
-			<div class="text-center">
-				<h1 class="text-3xl font-bold mb-2">Waiting for Players</h1>
-				<div class="text-4xl font-mono text-blue-400 mb-6">{matchStore.code}</div>
-				<p class="text-gray-400 mb-8">Share this code with friends to join!</p>
+<div class="match-container">
+	{#if gameStore.isConnecting}
+		<!-- Loading State -->
+		<div class="loading">
+			<div class="loading-text">Connecting to match...</div>
+			<div class="loading-spinner"></div>
+		</div>
+	{:else if gameStore.error}
+		<!-- Error State -->
+		<div class="error-state">
+			<div class="error-text">Error: {gameStore.error}</div>
+			<button class="btn btn-primary" onclick={returnToLobby}> Return to Lobby </button>
+		</div>
+	{:else if gameStore.status === 'waiting'}
+		<!-- Waiting Room -->
+		<div class="waiting-room">
+			<h1 class="title">Waiting for Players</h1>
+			<div class="match-code">{gameStore.code}</div>
+			<p class="subtitle">Share this code with friends to join!</p>
 
-				<!-- Players -->
-				<div class="bg-gray-800 rounded-lg p-6 mb-6 max-w-md mx-auto">
-					<h2 class="text-xl font-semibold mb-4">
-						Players ({matchStore.playerCount}/4)
-					</h2>
-					<div class="space-y-3">
-						{#each matchStore.playerList as player}
-							<div class="flex items-center gap-3">
-								<div class="w-4 h-4 rounded-full" style="background-color: {player.color}"></div>
-								{#if player.picture}
-									<img src={player.picture} alt="" class="w-8 h-8 rounded-full" />
-								{:else}
-									<div
-										class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm"
-									>
-										{(player.username || '?')[0].toUpperCase()}
-									</div>
-								{/if}
-								<span class="flex-1 text-left">
-									{player.username || 'Player'}
-									{#if player.user_id === matchStore.hostId}
-										<span class="text-yellow-400 text-sm">(Host)</span>
-									{/if}
-									{#if player.user_id === currentUserId}
-										<span class="text-blue-400 text-sm">(You)</span>
-									{/if}
-								</span>
-							</div>
-						{/each}
-					</div>
-				</div>
-
-				<!-- Start Button (Host Only) -->
-				{#if isHost}
-					<button
-						onclick={startGame}
-						disabled={matchStore.playerCount < 2}
-						class="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors"
-					>
-						{matchStore.playerCount < 2 ? 'Need at least 2 players' : 'Start Game'}
-					</button>
-				{:else}
-					<p class="text-gray-400">Waiting for host to start the game...</p>
-				{/if}
-
-				<button onclick={returnToLobby} class="block mx-auto mt-6 text-gray-400 hover:text-white">
-					Leave Match
-				</button>
-			</div>
-		{:else if matchStore.status === 'playing'}
-			<!-- Game View -->
-			<div>
-				<!-- Header -->
-				<div class="flex items-center justify-between mb-6">
-					<div class="text-lg">
-						Code: <span class="font-mono text-blue-400">{matchStore.code}</span>
-					</div>
-					<div class="text-4xl font-bold font-mono tabular-nums">
-						{matchStore.timeRemaining}s
-					</div>
-				</div>
-
-				<!-- Players Sidebar -->
-				<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-					{#each matchStore.playerList as player}
-						<div
-							class="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2"
-							style="border-left: 4px solid {player.color}"
-						>
-							<span class="flex-1 truncate text-sm">
+			<!-- Players -->
+			<div class="players-box">
+				<h2 class="players-title">Players ({gameStore.playerList.length}/4)</h2>
+				<div class="players-list">
+					{#each gameStore.playerList as player}
+						<div class="player-item">
+							<div class="player-color" style="background-color: {player.color}"></div>
+							{#if player.picture}
+								<img src={player.picture} alt="" class="player-avatar" />
+							{:else}
+								<div class="player-avatar-placeholder">
+									{(player.username || '?')[0].toUpperCase()}
+								</div>
+							{/if}
+							<span class="player-name">
 								{player.username || 'Player'}
+								{#if player.user_id === gameStore.hostId}
+									<span class="badge host">(Host)</span>
+								{/if}
 								{#if player.user_id === currentUserId}
-									<span class="text-blue-400">(You)</span>
+									<span class="badge you">(You)</span>
 								{/if}
 							</span>
 						</div>
 					{/each}
 				</div>
-
-				<!-- Game Grid -->
-				<div
-					class="grid gap-2 mx-auto"
-					style="grid-template-columns: repeat({matchStore.gridSize}, 1fr); max-width: {matchStore.gridSize *
-						80}px"
-				>
-					{#each Array(matchStore.gridSize) as _, row}
-						{#each Array(matchStore.gridSize) as _, col}
-							{@const cellColor = getCellColor(row, col)}
-							<button
-								aria-label="Cell at row {row + 1}, column {col + 1}"
-								onclick={() => handleCellClick(row, col)}
-								class="aspect-square rounded-lg border-2 border-gray-600 hover:border-gray-400 transition-all duration-150 cursor-pointer"
-								style={cellColor ? `background-color: ${cellColor}` : 'background-color: #374151'}
-							></button>
-						{/each}
-					{/each}
-				</div>
-
-				<p class="text-center text-gray-400 mt-4">Click cells to claim them!</p>
 			</div>
-		{:else}
-			<!-- Game Over -->
-			<div class="text-center">
-				<h1 class="text-4xl font-bold mb-2">Game Over!</h1>
 
-				{#if winner}
-					<div class="mb-8">
-						<div class="text-xl text-gray-400 mb-2">Winner</div>
-						<div class="flex items-center justify-center gap-3">
-							<div class="w-6 h-6 rounded-full" style="background-color: {winner.color}"></div>
-							<span class="text-3xl font-bold">{winner.username || 'Player'}</span>
-							{#if winner.user_id === currentUserId}
-								<span class="text-2xl">That's you!</span>
-							{/if}
-						</div>
-					</div>
-				{/if}
-
-				<!-- Final Scores -->
-				<div class="bg-gray-800 rounded-lg p-6 mb-8 max-w-md mx-auto">
-					<h2 class="text-xl font-semibold mb-4">Final Scores</h2>
-					<div class="space-y-3">
-						{#each sortedPlayers as player, index}
-							<div class="flex items-center gap-3">
-								<span class="text-gray-400 w-6">{index + 1}.</span>
-								<div class="w-4 h-4 rounded-full" style="background-color: {player.color}"></div>
-								<span class="flex-1 text-left">
-									{player.username || 'Player'}
-									{#if player.user_id === currentUserId}
-										<span class="text-blue-400 text-sm">(You)</span>
-									{/if}
-								</span>
-								<span class="font-bold">{player.score}</span>
-							</div>
-						{/each}
-					</div>
-				</div>
-
-				<!-- Final Grid Display -->
-				<div
-					class="grid gap-1 mx-auto mb-8"
-					style="grid-template-columns: repeat({matchStore.gridSize}, 1fr); max-width: {matchStore.gridSize *
-						40}px"
-				>
-					{#each Array(matchStore.gridSize) as _, row}
-						{#each Array(matchStore.gridSize) as _, col}
-							{@const cellColor = getFinalCellColor(row, col)}
-							<div
-								class="aspect-square rounded"
-								style={cellColor ? `background-color: ${cellColor}` : 'background-color: #374151'}
-							></div>
-						{/each}
-					{/each}
-				</div>
-
+			<!-- Start Button (Host Only) -->
+			{#if isHost}
 				<button
-					onclick={returnToLobby}
-					class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors"
+					class="btn btn-start"
+					onclick={startGame}
+					disabled={gameStore.playerList.length < 2}
 				>
-					Return to Lobby
+					{gameStore.playerList.length < 2 ? 'Need at least 2 players' : 'Start Game'}
 				</button>
+			{:else}
+				<p class="waiting-text">Waiting for host to start the game...</p>
+			{/if}
+
+			<button class="btn-text" onclick={returnToLobby}> Leave Match </button>
+		</div>
+	{:else if gameStore.status === 'playing'}
+		<!-- 3D Game View -->
+		<GameCanvas />
+		<GameHUD />
+	{:else}
+		<!-- Game Over -->
+		<div class="game-over">
+			<h1 class="title">Game Over!</h1>
+
+			{#if winner}
+				<div class="winner-section">
+					<div class="winner-label">Winner</div>
+					<div class="winner-display">
+						<div class="player-color large" style="background-color: {winner.color}"></div>
+						<span class="winner-name">{winner.username || 'Player'}</span>
+						{#if winner.user_id === currentUserId}
+							<span class="winner-you">That's you! 🎉</span>
+						{/if}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Final Scores -->
+			<div class="scores-box">
+				<h2 class="scores-title">Final Scores</h2>
+				<div class="scores-list">
+					{#each sortedPlayers as player, index}
+						<div class="score-item">
+							<span class="score-rank">{index + 1}.</span>
+							<div class="player-color" style="background-color: {player.color}"></div>
+							<span class="score-name">
+								{player.username || 'Player'}
+								{#if player.user_id === currentUserId}
+									<span class="badge you">(You)</span>
+								{/if}
+							</span>
+							<span class="score-value"
+								>{(gameStore.finalScores[player.user_id] || 0).toFixed(1)}%</span
+							>
+						</div>
+					{/each}
+				</div>
 			</div>
-		{/if}
-	</div>
+
+			<button class="btn btn-primary" onclick={returnToLobby}> Return to Lobby </button>
+		</div>
+	{/if}
 </div>
+
+<style>
+	.match-container {
+		min-height: 100vh;
+		background: #0f172a;
+		color: white;
+	}
+
+	.loading,
+	.error-state,
+	.waiting-room,
+	.game-over {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+	}
+
+	.loading-text,
+	.error-text {
+		font-size: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.error-text {
+		color: #f87171;
+	}
+
+	.loading-spinner {
+		width: 40px;
+		height: 40px;
+		border: 3px solid #374151;
+		border-top-color: #3b82f6;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.title {
+		font-size: 2rem;
+		font-weight: bold;
+		margin-bottom: 0.5rem;
+	}
+
+	.match-code {
+		font-size: 3rem;
+		font-family: monospace;
+		color: #60a5fa;
+		margin-bottom: 0.5rem;
+		letter-spacing: 0.2em;
+	}
+
+	.subtitle,
+	.waiting-text {
+		color: #9ca3af;
+		margin-bottom: 2rem;
+	}
+
+	.players-box,
+	.scores-box {
+		background: #1e293b;
+		border-radius: 0.75rem;
+		padding: 1.5rem;
+		margin-bottom: 1.5rem;
+		width: 100%;
+		max-width: 24rem;
+	}
+
+	.players-title,
+	.scores-title {
+		font-size: 1.25rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
+	}
+
+	.players-list,
+	.scores-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.player-item,
+	.score-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.player-color {
+		width: 1rem;
+		height: 1rem;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+
+	.player-color.large {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	.player-avatar {
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+	}
+
+	.player-avatar-placeholder {
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		background: #374151;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.875rem;
+	}
+
+	.player-name,
+	.score-name {
+		flex: 1;
+		text-align: left;
+	}
+
+	.badge {
+		font-size: 0.75rem;
+		margin-left: 0.25rem;
+	}
+
+	.badge.host {
+		color: #fbbf24;
+	}
+
+	.badge.you {
+		color: #60a5fa;
+	}
+
+	.score-rank {
+		color: #9ca3af;
+		width: 1.5rem;
+	}
+
+	.score-value {
+		font-weight: bold;
+	}
+
+	.btn {
+		padding: 0.75rem 1.5rem;
+		border-radius: 0.5rem;
+		font-weight: 600;
+		border: none;
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.btn-primary {
+		background: #3b82f6;
+		color: white;
+	}
+
+	.btn-primary:hover {
+		background: #2563eb;
+	}
+
+	.btn-start {
+		background: #22c55e;
+		color: white;
+		padding: 1rem 2rem;
+		font-size: 1.25rem;
+	}
+
+	.btn-start:hover:not(:disabled) {
+		background: #16a34a;
+	}
+
+	.btn-start:disabled {
+		background: #4b5563;
+		cursor: not-allowed;
+	}
+
+	.btn-text {
+		background: none;
+		border: none;
+		color: #9ca3af;
+		cursor: pointer;
+		margin-top: 1rem;
+	}
+
+	.btn-text:hover {
+		color: white;
+	}
+
+	.winner-section {
+		margin-bottom: 2rem;
+		text-align: center;
+	}
+
+	.winner-label {
+		font-size: 1.25rem;
+		color: #9ca3af;
+		margin-bottom: 0.5rem;
+	}
+
+	.winner-display {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+	}
+
+	.winner-name {
+		font-size: 2rem;
+		font-weight: bold;
+	}
+
+	.winner-you {
+		font-size: 1.5rem;
+	}
+</style>

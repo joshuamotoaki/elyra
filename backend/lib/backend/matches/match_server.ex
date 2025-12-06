@@ -1,31 +1,43 @@
 defmodule Backend.Matches.MatchServer do
   @moduledoc """
   GenServer that holds live game state for a single match.
-  One process per active match.
+  Runs at 60Hz tick rate for smooth real-time gameplay.
   """
   use GenServer
 
   alias Backend.Matches
+  alias Backend.Matches.{MapGenerator, PlayerState, BeamPhysics, Economy}
   alias Phoenix.PubSub
 
-  @tick_interval 1000
-
-  # Player colors for assignment
-  @colors ["#EF4444", "#3B82F6", "#22C55E", "#F59E0B"]
+  # 20Hz tick rate (50ms per tick) - balanced between smoothness and performance
+  @tick_interval 50
+  @ticks_per_second 20
+  @game_duration_seconds 120
 
   defstruct [
     :match_id,
     :code,
     :host_id,
-    :grid_size,
-    :duration,
-    :time_remaining,
     :status,
-    players: %{},
-    grid: %{}
+    # Map data
+    :map_tiles,
+    :generators,
+    :spawn_points,
+    :grid_size,
+    # Game state
+    :tile_owners,
+    :players,
+    :beams,
+    :coin_drops,
+    # Timing
+    :tick,
+    :time_remaining_ms,
+    :last_tick_time
   ]
 
+  # =============
   # Client API
+  # =============
 
   def start_link(match_id) do
     GenServer.start_link(__MODULE__, match_id, name: via_tuple(match_id))
@@ -35,9 +47,6 @@ defmodule Backend.Matches.MatchServer do
     {:via, Registry, {Backend.MatchRegistry, match_id}}
   end
 
-  @doc """
-  Check if a match server is running.
-  """
   def exists?(match_id) do
     case Registry.lookup(Backend.MatchRegistry, match_id) do
       [{_pid, _}] -> true
@@ -45,62 +54,69 @@ defmodule Backend.Matches.MatchServer do
     end
   end
 
-  @doc """
-  Join a match. Returns the current state.
-  """
+  @doc "Join a match. Returns the full game state."
   def join(match_id, user) do
     GenServer.call(via_tuple(match_id), {:join, user})
   end
 
-  @doc """
-  Leave a match.
-  """
+  @doc "Leave a match."
   def leave(match_id, user_id) do
     GenServer.call(via_tuple(match_id), {:leave, user_id})
   end
 
-  @doc """
-  Start the game. Only the host can do this.
-  """
+  @doc "Start the game. Only the host can do this."
   def start_game(match_id, user_id) do
     GenServer.call(via_tuple(match_id), {:start_game, user_id})
   end
 
-  @doc """
-  Click a cell to claim it.
-  """
-  def click_cell(match_id, user_id, row, col) do
-    GenServer.call(via_tuple(match_id), {:click_cell, user_id, row, col})
+  @doc "Update player input state (WASD)."
+  def update_input(match_id, user_id, input) do
+    GenServer.cast(via_tuple(match_id), {:input, user_id, input})
   end
 
-  @doc """
-  Get the current game state.
-  """
+  @doc "Fire a beam in a direction."
+  def shoot(match_id, user_id, dir_x, dir_y) do
+    GenServer.cast(via_tuple(match_id), {:shoot, user_id, dir_x, dir_y})
+  end
+
+  @doc "Purchase a power-up."
+  def buy_powerup(match_id, user_id, powerup_type) do
+    GenServer.call(via_tuple(match_id), {:buy_powerup, user_id, powerup_type})
+  end
+
+  @doc "Get the current game state."
   def get_state(match_id) do
     GenServer.call(via_tuple(match_id), :get_state)
   end
 
-  # Server callbacks
+  # =============
+  # Server Callbacks
+  # =============
 
   @impl true
   def init(match_id) do
     match = Matches.get_match_with_players(match_id)
 
     if match do
-      grid = initialize_grid(match.grid_size)
+      # Generate map
+      map_data = MapGenerator.generate()
 
-      # Build players map from existing match_players
+      # Initialize tile owners (all nil)
+      tile_owners =
+        map_data.map_tiles
+        |> Enum.filter(fn {_pos, type} -> type in [:walkable, :generator] end)
+        |> Enum.map(fn {pos, _type} -> {pos, nil} end)
+        |> Map.new()
+
+      # Build initial players from database (for rejoin scenarios)
       players =
         match.match_players
-        |> Enum.map(fn mp ->
-          {mp.user_id,
-           %{
-             user_id: mp.user_id,
-             username: mp.user.username || mp.user.name || "Player",
-             picture: mp.user.picture,
-             color: mp.color,
-             score: 0
-           }}
+        |> Enum.with_index()
+        |> Enum.map(fn {mp, idx} ->
+          spawn_point = Enum.at(map_data.spawn_points, rem(idx, 4))
+          {spawn_x, spawn_y} = spawn_point
+          player = PlayerState.new(mp.user, spawn_x, spawn_y, idx)
+          {mp.user_id, player}
         end)
         |> Map.new()
 
@@ -108,12 +124,18 @@ defmodule Backend.Matches.MatchServer do
         match_id: match_id,
         code: match.code,
         host_id: match.host_id,
-        grid_size: match.grid_size,
-        duration: match.duration_seconds,
-        time_remaining: match.duration_seconds,
         status: :waiting,
+        map_tiles: map_data.map_tiles,
+        generators: map_data.generators,
+        spawn_points: map_data.spawn_points,
+        grid_size: map_data.grid_size,
+        tile_owners: tile_owners,
         players: players,
-        grid: grid
+        beams: [],
+        coin_drops: [],
+        tick: 0,
+        time_remaining_ms: @game_duration_seconds * 1000,
+        last_tick_time: nil
       }
 
       {:ok, state}
@@ -126,8 +148,8 @@ defmodule Backend.Matches.MatchServer do
   def handle_call({:join, user}, _from, state) do
     cond do
       Map.has_key?(state.players, user.id) ->
-        # Already in match, just return state
-        {:reply, {:ok, format_state(state)}, state}
+        # Already in match, return current state
+        {:reply, {:ok, format_full_state(state)}, state}
 
       state.status != :waiting ->
         {:reply, {:error, :game_in_progress}, state}
@@ -140,24 +162,19 @@ defmodule Backend.Matches.MatchServer do
         match = Matches.get_match!(state.match_id)
         {:ok, _mp} = Matches.add_player(match, user)
 
-        # Assign color based on current player count
-        color = Enum.at(@colors, map_size(state.players))
+        # Assign spawn point and create player
+        idx = map_size(state.players)
+        spawn_point = Enum.at(state.spawn_points, rem(idx, 4))
+        {spawn_x, spawn_y} = spawn_point
+        player = PlayerState.new(user, spawn_x, spawn_y, idx)
 
-        player_info = %{
-          user_id: user.id,
-          username: user.username || user.name || "Player",
-          picture: user.picture,
-          color: color,
-          score: 0
-        }
-
-        new_players = Map.put(state.players, user.id, player_info)
+        new_players = Map.put(state.players, user.id, player)
         new_state = %{state | players: new_players}
 
-        # Broadcast to other players
-        broadcast(state.match_id, "player_joined", player_info)
+        # Broadcast join
+        broadcast(state.match_id, "player_joined", PlayerState.to_map(player))
 
-        {:reply, {:ok, format_state(new_state)}, new_state}
+        {:reply, {:ok, format_full_state(new_state)}, new_state}
     end
   end
 
@@ -167,10 +184,8 @@ defmodule Backend.Matches.MatchServer do
       new_players = Map.delete(state.players, user_id)
       new_state = %{state | players: new_players}
 
-      # Broadcast to other players
       broadcast(state.match_id, "player_left", %{user_id: user_id})
 
-      # If no players left and game is waiting, clean up the match
       if map_size(new_players) == 0 and state.status == :waiting do
         Matches.update_match_status(Matches.get_match!(state.match_id), "finished")
         {:stop, :normal, :ok, new_state}
@@ -195,43 +210,16 @@ defmodule Backend.Matches.MatchServer do
         {:reply, {:error, :not_enough_players}, state}
 
       true ->
-        # Update database status
         Matches.update_match_status(Matches.get_match!(state.match_id), "playing")
 
-        # Start countdown timer
+        # Start game loop
         Process.send_after(self(), :tick, @tick_interval)
-        new_state = %{state | status: :playing}
+        now = System.monotonic_time(:millisecond)
 
-        broadcast(state.match_id, "game_started", %{time_remaining: state.time_remaining})
+        new_state = %{state | status: :playing, last_tick_time: now}
 
-        {:reply, :ok, new_state}
-    end
-  end
-
-  @impl true
-  def handle_call({:click_cell, user_id, row, col}, _from, state) do
-    cond do
-      state.status != :playing ->
-        {:reply, {:error, :game_not_playing}, state}
-
-      not Map.has_key?(state.players, user_id) ->
-        {:reply, {:error, :not_in_game}, state}
-
-      not valid_cell?(state, row, col) ->
-        {:reply, {:error, :invalid_cell}, state}
-
-      true ->
-        # Update grid - stealing is allowed
-        new_grid = Map.put(state.grid, {row, col}, user_id)
-        new_state = %{state | grid: new_grid}
-
-        color = state.players[user_id].color
-
-        broadcast(state.match_id, "cell_claimed", %{
-          row: row,
-          col: col,
-          user_id: user_id,
-          color: color
+        broadcast(state.match_id, "game_started", %{
+          time_remaining_ms: state.time_remaining_ms
         })
 
         {:reply, :ok, new_state}
@@ -239,20 +227,140 @@ defmodule Backend.Matches.MatchServer do
   end
 
   @impl true
+  def handle_call({:buy_powerup, user_id, powerup_type}, _from, state) do
+    case Map.get(state.players, user_id) do
+      nil ->
+        {:reply, {:error, :not_in_game}, state}
+
+      player ->
+        type_atom = String.to_existing_atom(powerup_type)
+
+        case PlayerState.buy_powerup(player, type_atom) do
+          {:ok, updated_player} ->
+            new_players = Map.put(state.players, user_id, updated_player)
+            new_state = %{state | players: new_players}
+
+            broadcast(state.match_id, "powerup_purchased", %{
+              user_id: user_id,
+              type: powerup_type
+            })
+
+            {:reply, :ok, new_state}
+
+          {:error, reason} ->
+            {:reply, {:error, reason}, state}
+        end
+    end
+  rescue
+    ArgumentError ->
+      {:reply, {:error, :invalid_powerup}, state}
+  end
+
+  @impl true
   def handle_call(:get_state, _from, state) do
-    {:reply, format_state(state), state}
+    {:reply, format_full_state(state), state}
+  end
+
+  @impl true
+  def handle_cast({:input, user_id, input}, state) do
+    case Map.get(state.players, user_id) do
+      nil ->
+        {:noreply, state}
+
+      player ->
+        # Normalize input keys
+        normalized_input = %{
+          w: Map.get(input, "w", false) || Map.get(input, :w, false),
+          a: Map.get(input, "a", false) || Map.get(input, :a, false),
+          s: Map.get(input, "s", false) || Map.get(input, :s, false),
+          d: Map.get(input, "d", false) || Map.get(input, :d, false)
+        }
+
+        updated_player = PlayerState.update_input(player, normalized_input)
+        new_players = Map.put(state.players, user_id, updated_player)
+        {:noreply, %{state | players: new_players}}
+    end
+  end
+
+  @impl true
+  def handle_cast({:shoot, user_id, dir_x, dir_y}, state) do
+    if state.status != :playing do
+      {:noreply, state}
+    else
+      case Map.get(state.players, user_id) do
+        nil ->
+          {:noreply, state}
+
+        player ->
+          energy_cost = BeamPhysics.energy_cost()
+
+          case PlayerState.consume_energy(player, energy_cost) do
+            {:ok, updated_player} ->
+              # Create beam(s)
+              new_beams =
+                if player.has_multishot do
+                  BeamPhysics.create_multishot(player, dir_x, dir_y)
+                else
+                  [BeamPhysics.create(player, dir_x, dir_y)]
+                end
+
+              new_players = Map.put(state.players, user_id, updated_player)
+
+              # Broadcast beam fired
+              Enum.each(new_beams, fn beam ->
+                broadcast(state.match_id, "beam_fired", BeamPhysics.to_map(beam))
+              end)
+
+              {:noreply, %{state | players: new_players, beams: new_beams ++ state.beams}}
+
+            {:error, _reason} ->
+              {:noreply, state}
+          end
+      end
+    end
   end
 
   @impl true
   def handle_info(:tick, state) do
-    new_time = state.time_remaining - 1
-
-    if new_time <= 0 do
-      end_game(state)
+    if state.status != :playing do
+      {:noreply, state}
     else
-      broadcast(state.match_id, "tick", %{time_remaining: new_time})
-      Process.send_after(self(), :tick, @tick_interval)
-      {:noreply, %{state | time_remaining: new_time}}
+      now = System.monotonic_time(:millisecond)
+      dt = (now - state.last_tick_time) / 1000.0
+
+      # Update time remaining
+      new_time = state.time_remaining_ms - @tick_interval
+
+      if new_time <= 0 do
+        end_game(state)
+      else
+        # Store old tile owners for diffing
+        old_tile_owners = state.tile_owners
+
+        # Run game loop
+        new_state =
+          state
+          |> Map.put(:tick, state.tick + 1)
+          |> Map.put(:time_remaining_ms, new_time)
+          |> Map.put(:last_tick_time, now)
+          |> update_players(dt)
+          |> update_glow_capture()
+          |> update_beams(dt)
+          |> update_economy(dt)
+          |> update_coin_drops()
+          |> check_coin_pickups()
+
+        # Find changed tiles
+        changed_tiles = diff_tile_owners(old_tile_owners, new_state.tile_owners)
+
+        # Broadcast state delta
+        broadcast_state_delta(new_state, changed_tiles)
+
+        # Schedule next tick
+        Process.send_after(self(), :tick, @tick_interval)
+
+        {:noreply, new_state}
+      end
     end
   end
 
@@ -261,39 +369,266 @@ defmodule Backend.Matches.MatchServer do
     {:stop, :normal, state}
   end
 
-  # Private functions
+  # =============
+  # Game Loop Functions
+  # =============
 
-  defp initialize_grid(size) do
-    for row <- 0..(size - 1), col <- 0..(size - 1), into: %{} do
-      {{row, col}, nil}
+  defp update_players(state, dt) do
+    new_players =
+      state.players
+      |> Enum.map(fn {user_id, player} ->
+        updated =
+          player
+          |> PlayerState.update_position(dt)
+          |> apply_collision(state.map_tiles, state.grid_size)
+          |> PlayerState.clamp_position(state.grid_size)
+          |> PlayerState.regenerate_energy(dt)
+
+        {user_id, updated}
+      end)
+      |> Map.new()
+
+    %{state | players: new_players}
+  end
+
+  defp apply_collision(player, map_tiles, _grid_size) do
+    tile_x = trunc(player.x)
+    tile_y = trunc(player.y)
+    tile_type = Map.get(map_tiles, {tile_x, tile_y}, :walkable)
+
+    case tile_type do
+      t when t in [:walkable, :generator] ->
+        player
+
+      :wall ->
+        # Push back to previous valid position (simple collision)
+        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+
+      :hole ->
+        # Reset to spawn (or handle death)
+        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+
+      :mirror_ne ->
+        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+
+      :mirror_nw ->
+        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+
+      _ ->
+        player
     end
   end
 
-  defp valid_cell?(state, row, col) do
-    row >= 0 and row < state.grid_size and col >= 0 and col < state.grid_size
+  defp update_glow_capture(state) do
+    # Each player captures tiles within their glow radius
+    new_tile_owners =
+      Enum.reduce(state.players, state.tile_owners, fn {user_id, player}, owners ->
+        tiles = PlayerState.tiles_in_glow_radius(player)
+
+        Enum.reduce(tiles, owners, fn tile, acc ->
+          # Only capture if tile exists and is capturable
+          if Map.has_key?(acc, tile) do
+            Map.put(acc, tile, user_id)
+          else
+            acc
+          end
+        end)
+      end)
+
+    %{state | tile_owners: new_tile_owners}
   end
 
-  defp end_game(state) do
-    # Calculate scores
-    scores = calculate_scores(state)
-    winner_id = determine_winner(scores, state.players)
+  defp update_beams(state, dt) do
+    {updated_beams, all_captured, ended_beam_ids} =
+      Enum.reduce(state.beams, {[], [], []}, fn beam, {beams_acc, captured_acc, ended_acc} ->
+        player = Map.get(state.players, beam.user_id)
+        has_piercing = player != nil and player.has_piercing
 
-    # Convert grid to serializable format for database
-    final_state =
-      state.grid
-      |> Enum.map(fn {{row, col}, user_id} -> {"#{row},#{col}", user_id} end)
+        {updated_beam, captured, ended?} =
+          BeamPhysics.update(beam, dt, state.map_tiles, has_piercing)
+
+        new_beams_acc = if not ended?, do: [updated_beam | beams_acc], else: beams_acc
+        new_ended_acc = if ended?, do: [beam.id | ended_acc], else: ended_acc
+
+        {new_beams_acc, captured ++ captured_acc, new_ended_acc}
+      end)
+
+    # Capture tiles from beams
+    new_tile_owners =
+      Enum.reduce(all_captured, state.tile_owners, fn {tile, user_id}, owners ->
+        if Map.has_key?(owners, tile) do
+          # Find the beam's user_id for this capture
+          beam = Enum.find(state.beams, fn b -> b.id == user_id end)
+
+          if beam do
+            Map.put(owners, tile, beam.user_id)
+          else
+            owners
+          end
+        else
+          owners
+        end
+      end)
+
+    # Broadcast ended beams
+    Enum.each(ended_beam_ids, fn beam_id ->
+      broadcast(state.match_id, "beam_ended", %{id: beam_id})
+    end)
+
+    %{state | beams: updated_beams, tile_owners: new_tile_owners}
+  end
+
+  defp update_economy(state, dt) do
+    new_players =
+      state.players
+      |> Enum.map(fn {user_id, player} ->
+        income = Economy.calculate_income(player, state.generators, state.tile_owners, dt)
+        updated = PlayerState.add_coins(player, income)
+        {user_id, updated}
+      end)
       |> Map.new()
 
+    %{state | players: new_players}
+  end
+
+  defp update_coin_drops(state) do
+    # Maybe spawn new coin
+    new_drop =
+      Economy.maybe_spawn_coin_drop(
+        state.tick,
+        @ticks_per_second,
+        state.grid_size,
+        state.coin_drops
+      )
+
+    drops =
+      if new_drop do
+        broadcast(state.match_id, "coin_telegraph", Economy.coin_drop_to_map(new_drop))
+        [new_drop | state.coin_drops]
+      else
+        state.coin_drops
+      end
+
+    # Update existing drops
+    updated_drops = Economy.update_coin_drops(drops, state.tick)
+
+    # Broadcast newly spawned coins
+    Enum.each(updated_drops, fn drop ->
+      old_drop = Enum.find(drops, fn d -> d.id == drop.id end)
+
+      if old_drop && not old_drop.spawned && drop.spawned do
+        broadcast(state.match_id, "coin_spawned", Economy.coin_drop_to_map(drop))
+      end
+    end)
+
+    %{state | coin_drops: updated_drops}
+  end
+
+  defp check_coin_pickups(state) do
+    {updated_drops, pickups} = Economy.check_coin_pickups(state.coin_drops, state.players)
+
+    # Apply pickups to players
+    new_players =
+      Enum.reduce(pickups, state.players, fn {user_id, value, coin_id}, players ->
+        case Map.get(players, user_id) do
+          nil ->
+            players
+
+          player ->
+            updated = PlayerState.add_coins(player, value)
+            broadcast(state.match_id, "coin_collected", %{id: coin_id, user_id: user_id})
+            Map.put(players, user_id, updated)
+        end
+      end)
+
+    # Remove collected coins
+    final_drops = Enum.reject(updated_drops, & &1.collected)
+
+    %{state | coin_drops: final_drops, players: new_players}
+  end
+
+  # =============
+  # Broadcasting
+  # =============
+
+  defp diff_tile_owners(old_owners, new_owners) do
+    # Find tiles that have changed ownership
+    new_owners
+    |> Enum.filter(fn {pos, new_owner} ->
+      old_owner = Map.get(old_owners, pos)
+      old_owner != new_owner
+    end)
+    |> Map.new()
+  end
+
+  defp broadcast_state_delta(state, changed_tiles) do
+    # Build delta with only essential data for each tick
+    # Send minimal player data to reduce bandwidth
+    delta = %{
+      tick: state.tick,
+      server_timestamp: System.system_time(:millisecond),
+      time_remaining_ms: state.time_remaining_ms,
+      players:
+        state.players
+        |> Enum.map(fn {uid, p} ->
+          # Only send position and frequently changing state
+          {uid,
+           %{
+             x: p.x,
+             y: p.y,
+             energy: p.energy,
+             coins: p.coins,
+             glow_radius: p.glow_radius
+           }}
+        end)
+        |> Map.new(),
+      beams: Enum.map(state.beams, &BeamPhysics.to_map/1),
+      # Only include changed tiles to reduce bandwidth
+      tiles: serialize_tile_owners(changed_tiles)
+    }
+
+    broadcast(state.match_id, "state_delta", delta)
+  end
+
+  defp broadcast(match_id, event, payload) do
+    PubSub.broadcast(Backend.PubSub, "match:#{match_id}", {event, payload})
+  end
+
+  # =============
+  # Game End
+  # =============
+
+  defp end_game(state) do
+    # Calculate final scores (territory percentage)
+    total_tiles = map_size(state.tile_owners)
+
+    scores =
+      state.tile_owners
+      |> Enum.reduce(%{}, fn {_tile, owner_id}, acc ->
+        if owner_id do
+          Map.update(acc, owner_id, 1, &(&1 + 1))
+        else
+          acc
+        end
+      end)
+      |> Enum.map(fn {user_id, count} ->
+        percentage = if total_tiles > 0, do: count * 100 / total_tiles, else: 0
+        {user_id, Float.round(percentage, 1)}
+      end)
+      |> Map.new()
+
+    winner_id = determine_winner(scores)
+
     # Persist to database
+    final_state = serialize_tile_owners(state.tile_owners)
     Matches.finish_match(state.match_id, winner_id, final_state, scores)
 
-    # Update player scores in state
+    # Update player scores
     new_players =
       Enum.reduce(scores, state.players, fn {user_id, score}, players ->
-        if Map.has_key?(players, user_id) do
-          put_in(players, [user_id, :score], score)
-        else
-          players
+        case Map.get(players, user_id) do
+          nil -> players
+          player -> Map.put(players, user_id, %{player | coins: score})
         end
       end)
 
@@ -301,57 +636,63 @@ defmodule Backend.Matches.MatchServer do
     broadcast(state.match_id, "game_ended", %{
       winner_id: winner_id,
       scores: scores,
-      final_grid: final_state,
-      players: new_players
+      players:
+        new_players
+        |> Enum.map(fn {uid, p} -> {uid, PlayerState.to_map(p)} end)
+        |> Map.new()
     })
 
-    # Schedule process termination after 60 seconds
+    # Schedule termination
     Process.send_after(self(), :terminate, 60_000)
 
-    {:noreply, %{state | status: :finished, players: new_players, time_remaining: 0}}
+    {:noreply, %{state | status: :finished, players: new_players, time_remaining_ms: 0}}
   end
 
-  defp calculate_scores(state) do
-    state.grid
-    |> Enum.reduce(%{}, fn {{_row, _col}, user_id}, acc ->
-      if user_id do
-        Map.update(acc, user_id, 1, &(&1 + 1))
-      else
-        acc
-      end
-    end)
-  end
-
-  defp determine_winner(scores, players) do
+  defp determine_winner(scores) do
     if Enum.empty?(scores) do
-      # No cells claimed, pick random player or nil
-      players |> Map.keys() |> List.first()
+      nil
     else
       {winner_id, _score} = Enum.max_by(scores, fn {_id, score} -> score end)
       winner_id
     end
   end
 
-  defp broadcast(match_id, event, payload) do
-    PubSub.broadcast(Backend.PubSub, "match:#{match_id}", {event, payload})
-  end
+  # =============
+  # Helpers
+  # =============
 
-  defp format_state(state) do
-    # Convert grid keys to strings for JSON serialization
-    grid =
-      state.grid
-      |> Enum.map(fn {{row, col}, user_id} -> {"#{row},#{col}", user_id} end)
-      |> Map.new()
-
+  defp format_full_state(state) do
     %{
       match_id: state.match_id,
       code: state.code,
       status: state.status,
-      grid_size: state.grid_size,
-      time_remaining: state.time_remaining,
       host_id: state.host_id,
-      players: state.players,
-      grid: grid
+      grid_size: state.grid_size,
+      time_remaining_ms: state.time_remaining_ms,
+      tick: state.tick,
+      server_timestamp: System.system_time(:millisecond),
+      map_tiles: serialize_map_tiles(state.map_tiles),
+      tile_owners: serialize_tile_owners(state.tile_owners),
+      generators: Enum.map(state.generators, fn {x, y} -> "#{x},#{y}" end),
+      spawn_points: Enum.map(state.spawn_points, fn {x, y} -> "#{x},#{y}" end),
+      players:
+        state.players
+        |> Enum.map(fn {uid, p} -> {uid, PlayerState.to_map(p)} end)
+        |> Map.new(),
+      beams: Enum.map(state.beams, &BeamPhysics.to_map/1),
+      coin_drops: Enum.map(state.coin_drops, &Economy.coin_drop_to_map/1)
     }
+  end
+
+  defp serialize_map_tiles(tiles) do
+    tiles
+    |> Enum.map(fn {{x, y}, type} -> {"#{x},#{y}", Atom.to_string(type)} end)
+    |> Map.new()
+  end
+
+  defp serialize_tile_owners(owners) do
+    owners
+    |> Enum.map(fn {{x, y}, owner_id} -> {"#{x},#{y}", owner_id} end)
+    |> Map.new()
   end
 end

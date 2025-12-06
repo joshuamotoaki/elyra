@@ -221,11 +221,13 @@ defmodule Backend.Matches do
       })
       |> Repo.update()
 
-    # Update player scores
+    # Update player scores (round to integer since score field is integer)
     Enum.each(player_scores, fn {user_id, score} ->
+      rounded_score = round(score)
+
       MatchPlayer
       |> where([mp], mp.match_id == ^match_id and mp.user_id == ^user_id)
-      |> Repo.update_all(set: [score: score])
+      |> Repo.update_all(set: [score: rounded_score])
     end)
 
     :ok

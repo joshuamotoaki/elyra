@@ -1,4 +1,8 @@
 defmodule BackendWeb.MatchChannel do
+  @moduledoc """
+  Channel for real-time match communication.
+  Handles player input, shooting, power-up purchases, and state broadcasts.
+  """
   use BackendWeb, :channel
 
   alias Backend.Matches.MatchServer
@@ -8,26 +12,21 @@ defmodule BackendWeb.MatchChannel do
     user = socket.assigns.current_user
     match_id = String.to_integer(match_id_str)
 
-    # Check if match server exists
     if MatchServer.exists?(match_id) do
+      Phoenix.PubSub.subscribe(Backend.PubSub, "match:#{match_id}")
+
       case MatchServer.join(match_id, user) do
         {:ok, state} ->
-          send(self(), :after_join)
           {:ok, state, assign(socket, :match_id, match_id)}
 
         {:error, reason} ->
+          # Unsubscribe on error
+          Phoenix.PubSub.unsubscribe(Backend.PubSub, "match:#{match_id}")
           {:error, %{reason: reason}}
       end
     else
       {:error, %{reason: "match_not_found"}}
     end
-  end
-
-  @impl true
-  def handle_info(:after_join, socket) do
-    # Subscribe to PubSub topic for this match
-    Phoenix.PubSub.subscribe(Backend.PubSub, "match:#{socket.assigns.match_id}")
-    {:noreply, socket}
   end
 
   # Handle PubSub broadcasts and forward to client
@@ -57,12 +56,33 @@ defmodule BackendWeb.MatchChannel do
     end
   end
 
+  # Handle player input (WASD)
   @impl true
-  def handle_in("click_cell", %{"row" => row, "col" => col}, socket) do
+  def handle_in("input", input, socket) do
     user_id = socket.assigns.current_user.id
     match_id = socket.assigns.match_id
 
-    case MatchServer.click_cell(match_id, user_id, row, col) do
+    MatchServer.update_input(match_id, user_id, input)
+    {:noreply, socket}
+  end
+
+  # Handle shooting a beam
+  @impl true
+  def handle_in("shoot", %{"direction_x" => dir_x, "direction_y" => dir_y}, socket) do
+    user_id = socket.assigns.current_user.id
+    match_id = socket.assigns.match_id
+
+    MatchServer.shoot(match_id, user_id, dir_x, dir_y)
+    {:noreply, socket}
+  end
+
+  # Handle power-up purchase
+  @impl true
+  def handle_in("buy_powerup", %{"type" => powerup_type}, socket) do
+    user_id = socket.assigns.current_user.id
+    match_id = socket.assigns.match_id
+
+    case MatchServer.buy_powerup(match_id, user_id, powerup_type) do
       :ok ->
         {:reply, :ok, socket}
 
@@ -77,7 +97,6 @@ defmodule BackendWeb.MatchChannel do
       user_id = socket.assigns.current_user.id
       match_id = socket.assigns.match_id
 
-      # Try to leave the match
       if MatchServer.exists?(match_id) do
         MatchServer.leave(match_id, user_id)
       end
