@@ -1,6 +1,6 @@
-.PHONY: dev-local dev-frontend dev-full \
+.PHONY: dev-local dev-frontend dev-full dev \
         db-up db-down db-clear down logs-backend logs-frontend \
-        backend-shell frontend-shell migrate
+        backend-shell frontend-shell migrate migrate-docker help
 
 # =============================================================================
 # WORKFLOW 1: DBs in Docker, backend and/or frontend local
@@ -62,6 +62,12 @@ db-clear:
 # =============================================================================
 # General commands
 # =============================================================================
+dev: db-up
+	trap 'kill 0' INT TERM; \
+	(cd backend && mix deps.get && mix phx.server) & \
+	(cd frontend && pnpm i && pnpm dev) & \
+	wait
+
 down:
 	docker compose --profile full down
 
@@ -84,7 +90,10 @@ frontend-shell:
 	docker compose exec frontend sh
 
 migrate:
-	docker compose exec backend mix ecto.migrate
+	cd backend && mix deps.get && mix ecto.migrate
+
+migrate-docker:
+	docker compose exec backend sh -c "mix deps.get && mix ecto.migrate"
 
 # =============================================================================
 # Help
@@ -93,16 +102,19 @@ help:
 	@echo "Elyra Development Commands"
 	@echo ""
 	@echo "Workflows:"
-	@echo "  make dev-local     - DBs in Docker, run backend and/or frontend locally"
-	@echo "  make dev-frontend  - DBs + backend in Docker, run frontend locally"
-	@echo "  make dev-full      - Everything in Docker (prod-like)"
+	@echo "  make dev-local    		- DBs in Docker, run backend and/or frontend locally"
+	@echo "  make dev-frontend  	- DBs + backend in Docker, run frontend locally"
+	@echo "  make dev-full      	- Everything in Docker (prod-like)"
+	@echo "  make dev           	- DBs in Docker, run backend and frontend locally"
 	@echo ""
 	@echo "Database:"
-	@echo "  make db-up         - Start databases"
-	@echo "  make db-down       - Stop databases"
-	@echo "  make db-clear      - Stop databases and delete data"
+	@echo "  make db-up         	- Start databases"
+	@echo "  make db-down       	- Stop databases"
+	@echo "  make db-clear      	- Stop databases and delete data"
 	@echo ""
 	@echo "Other:"
-	@echo "  make down          - Stop all containers"
-	@echo "  make logs          - Tail all logs"
-	@echo "  make migrate       - Run database migrations"
+	@echo "  make down          	- Stop all containers"
+	@echo "  make logs          	- Tail all logs"
+	@echo "  make migrate       	- Run migrations (local backend)"
+	@echo "  make migrate-docker	- Run migrations (dockerized backend)"
+
