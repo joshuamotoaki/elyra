@@ -44,6 +44,9 @@ importers:
       phoenix:
         specifier: ^1.8.2
         version: 1.8.2
+      phosphor-svelte:
+        specifier: ^3.0.1
+        version: 3.0.1(svelte@5.45.3)(vite@7.2.6(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.94.2))
       three:
         specifier: ^0.181.2
         version: 0.181.2
@@ -1103,6 +1106,15 @@ packages:
 
   phoenix@1.8.2:
     resolution: {integrity: sha512-IcKJ4XNviIpWrQEhyg5oZAI4ajwtnbTpNh257aI8hQig85mS6XgL8cC4yoqdLPJPUSskpX2Hjzwa408S1ZTdQA==}
+
+  phosphor-svelte@3.0.1:
+    resolution: {integrity: sha512-QuxdzWCBjNZXglk4XpmaKb+JRA6XgKOYWpBY8k82NZwxO5ec7u2iFuueAijKYgj/7hLWHtreAPc2Q5uZFNTRSQ==}
+    peerDependencies:
+      svelte: ^5.0.0 || ^5.0.0-next.96
+      vite: '>=5'
+    peerDependenciesMeta:
+      vite:
+        optional: true
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -2202,6 +2214,14 @@ snapshots:
   path-parse@1.0.7: {}
 
   phoenix@1.8.2: {}
+
+  phosphor-svelte@3.0.1(svelte@5.45.3)(vite@7.2.6(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.94.2)):
+    dependencies:
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+      svelte: 5.45.3
+    optionalDependencies:
+      vite: 7.2.6(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.94.2)
 
   picocolors@1.1.1: {}
 

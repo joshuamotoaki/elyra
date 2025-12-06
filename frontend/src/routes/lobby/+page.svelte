@@ -6,6 +6,7 @@
 	import type { Match } from '$lib/api/types/match';
 	import { PageBackground, Header } from '$lib/components/layout';
 	import { Card, Button, Input, Toggle, Avatar } from '$lib/components/ui';
+	import { SpinnerGap, GameController, ArrowsClockwise } from 'phosphor-svelte';
 
 	const AUTO_REFRESH_INTERVAL = 10000; // 10 seconds
 
@@ -187,28 +188,10 @@
 					</div>
 					<Button onclick={loadMatches} disabled={isLoading} variant="ghost" size="sm">
 						{#if isLoading}
-							<svg
-								class="animate-spin h-4 w-4 mr-2"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-							>
-								<circle
-									class="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									stroke-width="4"
-								></circle>
-								<path
-									class="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-								></path>
-							</svg>
+							<SpinnerGap class="animate-spin mr-2" size={16} />
 							Loading
 						{:else}
+							<ArrowsClockwise class="mr-2" size={16} />
 							Refresh
 						{/if}
 					</Button>
@@ -217,26 +200,7 @@
 				{#if isLoading}
 					<div class="text-center py-12">
 						<div class="inline-flex items-center gap-2 text-slate-500">
-							<svg
-								class="animate-spin h-5 w-5"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-							>
-								<circle
-									class="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									stroke-width="4"
-								></circle>
-								<path
-									class="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-								></path>
-							</svg>
+							<SpinnerGap class="animate-spin" size={20} />
 							<span>Loading matches...</span>
 						</div>
 					</div>
@@ -245,19 +209,7 @@
 						<div
 							class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center"
 						>
-							<svg
-								class="w-8 h-8 text-slate-400"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-								/>
-							</svg>
+							<GameController class="text-slate-400" size={32} />
 						</div>
 						<p class="text-slate-600 font-medium">No matches available</p>
 						<p class="text-slate-500 text-sm mt-1">Create one to get started!</p>
