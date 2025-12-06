@@ -54,7 +54,7 @@ The authentication system uses:
          │                        │                        │
          │  10. Redirect to       │                        │
          │      /onboarding or    │                        │
-         │      /dashboard        │                        │
+         │      /lobby.           │                        │
          │                        │                        │
          │  11. API requests with │                        │
          │      Authorization:    │                        │
@@ -282,7 +282,7 @@ OAuth callback handler:
 1. Extracts `token` and `redirect` from URL params
 2. Stores token via `auth.setToken(token)`
 3. Loads user via `auth.loadUser()`
-4. Redirects to `/onboarding` or `/dashboard`
+4. Redirects to `/onboarding` or `/lobby`
 
 #### `src/routes/onboarding/+page.svelte`
 
@@ -290,11 +290,11 @@ Username selection page:
 
 - Real-time availability checking via `/api/users/check-username`
 - Sets username via `PUT /api/users/username`
-- Redirects to `/dashboard` on success
+- Redirects to `/lobby` on success
 
-#### `src/routes/dashboard/+page.svelte`
+#### `src/routes/lobby/+page.svelte`
 
-Protected dashboard:
+Protected lobby:
 
 - Checks authentication on mount
 - Redirects to `/` if not authenticated
