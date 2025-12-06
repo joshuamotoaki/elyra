@@ -188,6 +188,7 @@
 						{#each Array(matchStore.gridSize) as _, col}
 							{@const cellColor = getCellColor(row, col)}
 							<button
+								aria-label="Cell at row {row + 1}, column {col + 1}"
 								onclick={() => handleCellClick(row, col)}
 								class="aspect-square rounded-lg border-2 border-gray-600 hover:border-gray-400 transition-all duration-150 cursor-pointer"
 								style={cellColor ? `background-color: ${cellColor}` : 'background-color: #374151'}

@@ -124,13 +124,18 @@ defmodule Backend.Matches.MatchServer do
 
   @impl true
   def handle_call({:join, user}, _from, state) do
-    if Map.has_key?(state.players, user.id) do
-      # Already in match, just return state
-      {:reply, {:ok, format_state(state)}, state}
-    else
-      if map_size(state.players) >= 4 do
+    cond do
+      Map.has_key?(state.players, user.id) ->
+        # Already in match, just return state
+        {:reply, {:ok, format_state(state)}, state}
+
+      state.status != :waiting ->
+        {:reply, {:error, :game_in_progress}, state}
+
+      map_size(state.players) >= 4 ->
         {:reply, {:error, :match_full}, state}
-      else
+
+      true ->
         # Add to database
         match = Matches.get_match!(state.match_id)
         {:ok, _mp} = Matches.add_player(match, user)
@@ -153,7 +158,6 @@ defmodule Backend.Matches.MatchServer do
         broadcast(state.match_id, "player_joined", player_info)
 
         {:reply, {:ok, format_state(new_state)}, new_state}
-      end
     end
   end
 

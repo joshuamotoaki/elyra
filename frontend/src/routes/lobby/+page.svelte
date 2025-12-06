@@ -151,6 +151,7 @@
 						type="button"
 						role="switch"
 						aria-checked={isPublic}
+						aria-label="Toggle match visibility"
 					>
 						<span
 							class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform {isPublic
