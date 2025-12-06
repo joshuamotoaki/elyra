@@ -1,7 +1,13 @@
 {
-  "elixirLS.projectDir": "/backend",
+  "elixirLS.projectDir": "backend",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": null,
+
+  "prettier.configPath": "./frontend/.prettierrc",
+  "prettier.prettierPath": "./frontend/node_modules/prettier",
+
+  "svelte.plugin.svelte.format.config.prettierPath": "./frontend/node_modules/prettier",
+  "svelte.plugin.svelte.format.config.configPath": "./frontend/.prettierrc",
 
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

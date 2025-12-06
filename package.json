@@ -11,7 +11,7 @@
     "lint-staged": "^15.0.0"
   },
   "lint-staged": {
-    "frontend/**/*.{js,ts,svelte,css,html,json,md}": "prettier --write --config frontend/.prettierrc",
+    "frontend/**/*.{js,ts,svelte,css,html,json,md}": "pnpm -C frontend exec prettier --write",
     "backend/**/*.{ex,exs,heex}": "mix format --dot-formatter backend/.formatter.exs"
   }
 }
