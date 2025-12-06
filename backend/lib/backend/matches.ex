@@ -86,7 +86,7 @@ defmodule Backend.Matches do
       )
 
     Match
-    |> where([m], m.status == "waiting" and m.is_public == true)
+    |> where([m], m.status == "waiting" and m.is_public == true and m.is_solo == false)
     |> where([m], m.id in subquery(matches_with_players))
     |> preload([:host, match_players: :user])
     |> order_by([m], desc: m.inserted_at)

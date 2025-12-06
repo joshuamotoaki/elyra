@@ -13,6 +13,7 @@
 	let matches = $state<Match[]>([]);
 	let joinCode = $state('');
 	let isCreating = $state(false);
+	let isCreatingSolo = $state(false);
 	let isJoining = $state(false);
 	let isLoading = $state(true);
 	let isPublic = $state(true);
@@ -99,6 +100,18 @@
 	function joinMatch(matchId: number) {
 		goto(`/match/${matchId}`);
 	}
+
+	async function createSoloMatch() {
+		isCreatingSolo = true;
+		error = null;
+		try {
+			const match = await elyraClient.matches.createMatch({ is_public: false, is_solo: true });
+			goto(`/match/${match.id}`);
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to create solo match';
+			isCreatingSolo = false;
+		}
+	}
 </script>
 
 <PageBackground variant="static">
@@ -180,7 +193,7 @@
 			</div>
 
 			<!-- Available Matches -->
-			<Card variant="elevated" padding="lg">
+			<Card variant="elevated" padding="lg" class="mb-8">
 				<div class="flex items-center justify-between mb-6">
 					<div>
 						<h3 class="text-lg font-semibold text-slate-800">Available Matches</h3>
@@ -246,6 +259,24 @@
 						{/each}
 					</div>
 				{/if}
+			</Card>
+
+			<!-- Solo Practice -->
+			<Card variant="elevated" padding="lg">
+				<h3 class="text-lg font-semibold text-slate-800 mb-2">Solo Practice</h3>
+				<p class="text-slate-500 text-sm mb-6">
+					Practice movement, shooting, and tile capture without opponents or time limits.
+				</p>
+				<Button
+					onclick={createSoloMatch}
+					disabled={isCreatingSolo}
+					loading={isCreatingSolo}
+					variant="secondary"
+					size="lg"
+					class="w-full"
+				>
+					Start Solo Practice
+				</Button>
 			</Card>
 		</div>
 	</div>

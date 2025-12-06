@@ -6,6 +6,7 @@ defmodule Backend.Matches.Match do
     field :code, :string
     field :status, :string, default: "waiting"
     field :is_public, :boolean, default: true
+    field :is_solo, :boolean, default: false
     field :final_state, :map
 
     belongs_to :host, Backend.Accounts.User
@@ -23,6 +24,7 @@ defmodule Backend.Matches.Match do
       :code,
       :status,
       :is_public,
+      :is_solo,
       :final_state,
       :host_id,
       :winner_id

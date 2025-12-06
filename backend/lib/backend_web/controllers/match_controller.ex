@@ -22,8 +22,12 @@ defmodule BackendWeb.MatchController do
   def create(conn, params) do
     user = Guardian.Plug.current_resource(conn)
 
+    is_solo = Map.get(params, "is_solo", false)
+
     attrs = %{
-      is_public: Map.get(params, "is_public", true)
+      # Solo matches are always private
+      is_public: if(is_solo, do: false, else: Map.get(params, "is_public", true)),
+      is_solo: is_solo
     }
 
     with {:ok, match} <- Matches.create_match(user, attrs),

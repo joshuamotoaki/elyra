@@ -21,6 +21,7 @@ defmodule BackendWeb.MatchJSON do
       code: match.code,
       status: match.status,
       is_public: match.is_public,
+      is_solo: match.is_solo,
       host_id: match.host_id,
       host: host_data(match.host),
       player_count: length(match.match_players || []),

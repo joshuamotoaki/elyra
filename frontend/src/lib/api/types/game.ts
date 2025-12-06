@@ -52,8 +52,9 @@ export interface GameState {
 	code: string;
 	status: 'waiting' | 'playing' | 'finished';
 	host_id: number;
+	is_solo: boolean;
 	grid_size: number;
-	time_remaining_ms: number;
+	time_remaining_ms: number | null; // null for unlimited (solo mode)
 	tick: number;
 	server_timestamp: number;
 	map_tiles: Record<string, string>; // "x,y" -> tile type
@@ -69,7 +70,7 @@ export interface GameState {
 export interface StateDelta {
 	tick: number;
 	server_timestamp: number;
-	time_remaining_ms: number;
+	time_remaining_ms: number | null; // null for unlimited (solo mode)
 	players: Record<number, Partial<PlayerState> & { x: number; y: number }>;
 	beams?: Beam[];
 	tiles?: Record<string, number | null>; // Changed tile owners: "x,y" -> user_id

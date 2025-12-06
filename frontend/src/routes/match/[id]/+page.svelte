@@ -97,13 +97,24 @@
 	{:else if gameStore.status === 'waiting'}
 		<!-- Waiting Room -->
 		<div class="waiting-room">
-			<h1 class="title">Waiting for Players</h1>
-			<div class="match-code">{gameStore.code}</div>
-			<p class="subtitle">Share this code with friends to join!</p>
+			{#if gameStore.isSolo}
+				<h1 class="title">Solo Practice</h1>
+				<p class="subtitle">Press start when ready!</p>
+			{:else}
+				<h1 class="title">Waiting for Players</h1>
+				<div class="match-code">{gameStore.code}</div>
+				<p class="subtitle">Share this code with friends to join!</p>
+			{/if}
 
 			<!-- Players -->
 			<div class="players-box">
-				<h2 class="players-title">Players ({gameStore.playerList.length}/4)</h2>
+				<h2 class="players-title">
+					{#if gameStore.isSolo}
+						Your Character
+					{:else}
+						Players ({gameStore.playerList.length}/4)
+					{/if}
+				</h2>
 				<div class="players-list">
 					{#each gameStore.playerList as player}
 						<div class="player-item">
@@ -117,7 +128,7 @@
 							{/if}
 							<span class="player-name">
 								{player.username || 'Player'}
-								{#if player.user_id === gameStore.hostId}
+								{#if player.user_id === gameStore.hostId && !gameStore.isSolo}
 									<span class="badge host">(Host)</span>
 								{/if}
 								{#if player.user_id === currentUserId}
@@ -134,9 +145,15 @@
 				<button
 					class="btn btn-start"
 					onclick={startGame}
-					disabled={gameStore.playerList.length < 2}
+					disabled={!gameStore.isSolo && gameStore.playerList.length < 2}
 				>
-					{gameStore.playerList.length < 2 ? 'Need at least 2 players' : 'Start Game'}
+					{#if gameStore.isSolo}
+						Start Practice
+					{:else if gameStore.playerList.length < 2}
+						Need at least 2 players
+					{:else}
+						Start Game
+					{/if}
 				</button>
 			{:else}
 				<p class="waiting-text">Waiting for host to start the game...</p>
@@ -151,42 +168,62 @@
 	{:else}
 		<!-- Game Over -->
 		<div class="game-over">
-			<h1 class="title">Game Over!</h1>
+			{#if gameStore.isSolo}
+				<h1 class="title">Practice Complete</h1>
 
-			{#if winner}
-				<div class="winner-section">
-					<div class="winner-label">Winner</div>
-					<div class="winner-display">
-						<div class="player-color large" style="background-color: {winner.color}"></div>
-						<span class="winner-name">{winner.username || 'Player'}</span>
-						{#if winner.user_id === currentUserId}
-							<span class="winner-you">That's you! 🎉</span>
-						{/if}
+				<!-- Solo Stats -->
+				<div class="scores-box">
+					<h2 class="scores-title">Your Stats</h2>
+					<div class="scores-list">
+						{#each sortedPlayers as player}
+							<div class="score-item">
+								<div class="player-color" style="background-color: {player.color}"></div>
+								<span class="score-name">{player.username || 'Player'}</span>
+								<span class="score-value"
+									>{(gameStore.finalScores[player.user_id] || 0).toFixed(1)}% territory</span
+								>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{:else}
+				<h1 class="title">Game Over!</h1>
+
+				{#if winner}
+					<div class="winner-section">
+						<div class="winner-label">Winner</div>
+						<div class="winner-display">
+							<div class="player-color large" style="background-color: {winner.color}"></div>
+							<span class="winner-name">{winner.username || 'Player'}</span>
+							{#if winner.user_id === currentUserId}
+								<span class="winner-you">That's you!</span>
+							{/if}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Final Scores -->
+				<div class="scores-box">
+					<h2 class="scores-title">Final Scores</h2>
+					<div class="scores-list">
+						{#each sortedPlayers as player, index}
+							<div class="score-item">
+								<span class="score-rank">{index + 1}.</span>
+								<div class="player-color" style="background-color: {player.color}"></div>
+								<span class="score-name">
+									{player.username || 'Player'}
+									{#if player.user_id === currentUserId}
+										<span class="badge you">(You)</span>
+									{/if}
+								</span>
+								<span class="score-value"
+									>{(gameStore.finalScores[player.user_id] || 0).toFixed(1)}%</span
+								>
+							</div>
+						{/each}
 					</div>
 				</div>
 			{/if}
-
-			<!-- Final Scores -->
-			<div class="scores-box">
-				<h2 class="scores-title">Final Scores</h2>
-				<div class="scores-list">
-					{#each sortedPlayers as player, index}
-						<div class="score-item">
-							<span class="score-rank">{index + 1}.</span>
-							<div class="player-color" style="background-color: {player.color}"></div>
-							<span class="score-name">
-								{player.username || 'Player'}
-								{#if player.user_id === currentUserId}
-									<span class="badge you">(You)</span>
-								{/if}
-							</span>
-							<span class="score-value"
-								>{(gameStore.finalScores[player.user_id] || 0).toFixed(1)}%</span
-							>
-						</div>
-					{/each}
-				</div>
-			</div>
 
 			<button class="btn btn-primary" onclick={returnToLobby}> Return to Lobby </button>
 		</div>

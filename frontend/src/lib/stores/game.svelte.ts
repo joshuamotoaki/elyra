@@ -28,6 +28,7 @@ class GameStore {
 	code = $state<string>('');
 	status = $state<'waiting' | 'playing' | 'finished'>('waiting');
 	hostId = $state<number | null>(null);
+	isSolo = $state(false);
 	isConnecting = $state(false);
 	error = $state<string | null>(null);
 
@@ -46,7 +47,7 @@ class GameStore {
 	// Timing
 	tick = $state(0);
 	serverTimestamp = $state(0);
-	timeRemainingMs = $state(120000);
+	timeRemainingMs = $state<number | null>(120000);
 
 	// Local player
 	localPlayerId = $state<number | null>(null);
@@ -79,10 +80,14 @@ class GameStore {
 	}
 
 	get timeRemainingSeconds(): number {
+		if (this.timeRemainingMs === null) return Infinity;
 		return Math.ceil(this.timeRemainingMs / 1000);
 	}
 
 	get formattedTime(): string {
+		if (this.timeRemainingMs === null) {
+			return '--:--'; // Unlimited time for solo mode
+		}
 		const seconds = this.timeRemainingSeconds;
 		const mins = Math.floor(seconds / 60);
 		const secs = seconds % 60;
@@ -97,6 +102,7 @@ class GameStore {
 		this.code = state.code;
 		this.status = state.status;
 		this.hostId = state.host_id;
+		this.isSolo = state.is_solo ?? false;
 		this.gridSize = state.grid_size;
 		this.timeRemainingMs = state.time_remaining_ms;
 		this.tick = state.tick;
@@ -435,6 +441,7 @@ class GameStore {
 		this.code = '';
 		this.status = 'waiting';
 		this.hostId = null;
+		this.isSolo = false;
 		this.isConnecting = false;
 		this.error = null;
 		this.gridSize = 100;

@@ -6,6 +6,7 @@ export interface Match {
 	code: string;
 	status: 'waiting' | 'playing' | 'finished';
 	is_public: boolean;
+	is_solo: boolean;
 	host_id: number;
 	host: {
 		id: number;
@@ -36,6 +37,7 @@ export interface MatchPlayer {
  */
 export interface CreateMatchRequest {
 	is_public?: boolean;
+	is_solo?: boolean;
 }
 
 /**

@@ -19,6 +19,7 @@ defmodule Backend.Matches.MatchServer do
     :code,
     :host_id,
     :status,
+    :is_solo,
     # Map data
     :map_tiles,
     :generators,
@@ -120,11 +121,15 @@ defmodule Backend.Matches.MatchServer do
         end)
         |> Map.new()
 
+      # Solo matches have infinite time
+      time_remaining = if match.is_solo, do: :infinity, else: @game_duration_seconds * 1000
+
       state = %__MODULE__{
         match_id: match_id,
         code: match.code,
         host_id: match.host_id,
         status: :waiting,
+        is_solo: match.is_solo,
         map_tiles: map_data.map_tiles,
         generators: map_data.generators,
         spawn_points: map_data.spawn_points,
@@ -134,7 +139,7 @@ defmodule Backend.Matches.MatchServer do
         beams: [],
         coin_drops: [],
         tick: 0,
-        time_remaining_ms: @game_duration_seconds * 1000,
+        time_remaining_ms: time_remaining,
         last_tick_time: nil
       }
 
@@ -199,6 +204,9 @@ defmodule Backend.Matches.MatchServer do
 
   @impl true
   def handle_call({:start_game, user_id}, _from, state) do
+    # Solo matches only need 1 player, regular matches need 2
+    min_players = if state.is_solo, do: 1, else: 2
+
     cond do
       user_id != state.host_id ->
         {:reply, {:error, :not_host}, state}
@@ -206,7 +214,7 @@ defmodule Backend.Matches.MatchServer do
       state.status != :waiting ->
         {:reply, {:error, :game_already_started}, state}
 
-      map_size(state.players) < 2 ->
+      map_size(state.players) < min_players ->
         {:reply, {:error, :not_enough_players}, state}
 
       true ->
@@ -328,10 +336,17 @@ defmodule Backend.Matches.MatchServer do
       now = System.monotonic_time(:millisecond)
       dt = (now - state.last_tick_time) / 1000.0
 
-      # Update time remaining
-      new_time = state.time_remaining_ms - @tick_interval
+      # Update time remaining (solo matches have :infinity time)
+      new_time =
+        case state.time_remaining_ms do
+          :infinity -> :infinity
+          ms -> ms - @tick_interval
+        end
 
-      if new_time <= 0 do
+      # Solo matches never end from timer
+      should_end = new_time != :infinity and new_time <= 0
+
+      if should_end do
         end_game(state)
       else
         # Store old tile owners for diffing
@@ -564,10 +579,17 @@ defmodule Backend.Matches.MatchServer do
   defp broadcast_state_delta(state, changed_tiles) do
     # Build delta with only essential data for each tick
     # Send minimal player data to reduce bandwidth
+    # Convert :infinity to nil for JSON serialization
+    time_remaining =
+      case state.time_remaining_ms do
+        :infinity -> nil
+        ms -> ms
+      end
+
     delta = %{
       tick: state.tick,
       server_timestamp: System.system_time(:millisecond),
-      time_remaining_ms: state.time_remaining_ms,
+      time_remaining_ms: time_remaining,
       players:
         state.players
         |> Enum.map(fn {uid, p} ->
@@ -662,13 +684,21 @@ defmodule Backend.Matches.MatchServer do
   # =============
 
   defp format_full_state(state) do
+    # Convert :infinity to nil for JSON serialization
+    time_remaining =
+      case state.time_remaining_ms do
+        :infinity -> nil
+        ms -> ms
+      end
+
     %{
       match_id: state.match_id,
       code: state.code,
       status: state.status,
       host_id: state.host_id,
+      is_solo: state.is_solo,
       grid_size: state.grid_size,
-      time_remaining_ms: state.time_remaining_ms,
+      time_remaining_ms: time_remaining,
       tick: state.tick,
       server_timestamp: System.system_time(:millisecond),
       map_tiles: serialize_map_tiles(state.map_tiles),
