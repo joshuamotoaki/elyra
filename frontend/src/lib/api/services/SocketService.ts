@@ -26,6 +26,7 @@ import type {
 	CoinCollectedEvent,
 	PowerUpPurchasedEvent
 } from '../types/game';
+import type { ISocketService } from '../interfaces/ISocketService';
 
 interface ErrorResponse {
 	reason?: string;
@@ -34,7 +35,7 @@ interface ErrorResponse {
 /**
  * Service for WebSocket communication with the game server.
  */
-export class SocketService {
+export class SocketService implements ISocketService {
 	private socket: Socket | null = null;
 	private matchChannel: Channel | null = null;
 
