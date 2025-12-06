@@ -388,14 +388,16 @@ defmodule Backend.Matches.MatchServer do
   # Game Loop Functions
   # =============
 
+  # Maya
   defp update_players(state, dt) do
     new_players =
       state.players
       |> Enum.map(fn {user_id, player} ->
         updated =
           player
-          |> PlayerState.update_position(dt)
-          |> apply_collision(state.map_tiles, state.grid_size)
+          |> PlayerState.update_position(dt, state.map_tiles)
+          # apply_collision is no longer necessary for walls/holes,
+          # but you could keep it later if you want special behavior.
           |> PlayerState.clamp_position(state.grid_size)
           |> PlayerState.regenerate_energy(dt)
 
@@ -405,6 +407,24 @@ defmodule Backend.Matches.MatchServer do
 
     %{state | players: new_players}
   end
+
+  # defp update_players(state, dt) do
+  #   new_players =
+  #     state.players
+  #     |> Enum.map(fn {user_id, player} ->
+  #       updated =
+  #         player
+  #         |> PlayerState.update_position(dt)
+  #         |> apply_collision(state.map_tiles, state.grid_size)
+  #         |> PlayerState.clamp_position(state.grid_size)
+  #         |> PlayerState.regenerate_energy(dt)
+
+  #       {user_id, updated}
+  #     end)
+  #     |> Map.new()
+
+  #   %{state | players: new_players}
+  # end
 
   defp apply_collision(player, map_tiles, _grid_size) do
     tile_x = trunc(player.x)

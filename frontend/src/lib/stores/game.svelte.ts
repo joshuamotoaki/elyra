@@ -270,6 +270,8 @@ class GameStore {
 	/**
 	 * Update local visual position based on input (immediate feedback)
 	 */
+
+	// Maya
 	updateLocalVisualPosition(dt: number) {
 		const player = this.localPlayer;
 		if (!player) return;
@@ -291,14 +293,57 @@ class GameStore {
 			dy /= mag;
 		}
 
-		const speed = player.glow_radius > 1.5 ? 5 * 1.15 : 5; // Approximate speed with upgrades
-		this.localVisualX += dx * speed * dt;
-		this.localVisualY += dy * speed * dt;
+		const speed = player.glow_radius > 1.5 ? 5 * 1.15 : 5;
+		const stepX = dx * speed * dt;
+		const stepY = dy * speed * dt;
 
-		// Clamp to grid
+		const proposedX = this.localVisualX + stepX;
+		const proposedY = this.localVisualY + stepY;
+
+		// Try X axis first
+		if (this.canMoveTo(proposedX, this.localVisualY)) {
+			this.localVisualX = proposedX;
+		}
+
+		// Then Y axis
+		if (this.canMoveTo(this.localVisualX, proposedY)) {
+			this.localVisualY = proposedY;
+		}
+
+		// Clamp to grid (same as before)
 		this.localVisualX = Math.max(0, Math.min(this.localVisualX, this.gridSize - 1));
 		this.localVisualY = Math.max(0, Math.min(this.localVisualY, this.gridSize - 1));
 	}
+
+	// updateLocalVisualPosition(dt: number) {
+	// 	const player = this.localPlayer;
+	// 	if (!player) return;
+
+	// 	const input = this.currentInput;
+	// 	let dx = 0;
+	// 	let dy = 0;
+
+	// 	if (input.d && !input.a) dx = 1;
+	// 	else if (input.a && !input.d) dx = -1;
+
+	// 	if (input.s && !input.w) dy = 1;
+	// 	else if (input.w && !input.s) dy = -1;
+
+	// 	// Normalize diagonal
+	// 	if (dx !== 0 && dy !== 0) {
+	// 		const mag = Math.sqrt(2);
+	// 		dx /= mag;
+	// 		dy /= mag;
+	// 	}
+
+	// 	const speed = player.glow_radius > 1.5 ? 5 * 1.15 : 5; // Approximate speed with upgrades
+	// 	this.localVisualX += dx * speed * dt;
+	// 	this.localVisualY += dy * speed * dt;
+
+	// 	// Clamp to grid
+	// 	this.localVisualX = Math.max(0, Math.min(this.localVisualX, this.gridSize - 1));
+	// 	this.localVisualY = Math.max(0, Math.min(this.localVisualY, this.gridSize - 1));
+	// }
 
 	/**
 	 * Set current input state
@@ -395,6 +440,29 @@ class GameStore {
 		this.winnerId = winnerId;
 		this.finalScores = scores;
 		this.finalPlayers = new Map(Object.entries(players).map(([id, p]) => [Number(id), p]));
+	}
+
+	// Maya pr
+	canMoveTo(x: number, y: number): boolean {
+		// Match server: trunc(new_x) / trunc(new_y)
+		const tileX = Math.trunc(x);
+		const tileY = Math.trunc(y);
+
+		// Bounds check
+		if (tileX < 0 || tileX >= this.gridSize || tileY < 0 || tileY >= this.gridSize) {
+			return false;
+		}
+
+		const tile = this.getTileType(tileX, tileY);
+
+		// No tile? Treat as blocked
+		if (!tile) return false;
+
+		// Match backend rule exactly:
+		// allowed: :walkable, :generator, :mirror_ne, :mirror_nw
+		return (
+			tile === 'walkable' || tile === 'generator' || tile === 'mirror_ne' || tile === 'mirror_nw'
+		);
 	}
 
 	/**

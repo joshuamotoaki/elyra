@@ -71,7 +71,9 @@ defmodule Backend.Matches.PlayerState do
   Updates player position based on input and delta time.
   Returns updated player state.
   """
-  def update_position(player, dt) do
+
+  # Maya
+  def update_position(player, dt, map_tiles) do
     # Calculate velocity based on input
     dx = input_to_direction(player.input.d, player.input.a)
     dy = input_to_direction(player.input.s, player.input.w)
@@ -82,8 +84,24 @@ defmodule Backend.Matches.PlayerState do
     # Apply speed
     effective_speed = player.base_speed * player.speed_multiplier
 
-    new_x = player.x + dx * effective_speed * dt
-    new_y = player.y + dy * effective_speed * dt
+    target_x = player.x + dx * effective_speed * dt
+    target_y = player.y + dy * effective_speed * dt
+
+    # First try moving in X direction
+    new_x =
+      if can_move_to?(player, map_tiles, target_x, player.y) do
+        target_x
+      else
+        player.x
+      end
+
+    # Then try moving in Y direction
+    new_y =
+      if can_move_to?(player, map_tiles, new_x, target_y) do
+        target_y
+      else
+        player.y
+      end
 
     %{
       player
@@ -93,6 +111,30 @@ defmodule Backend.Matches.PlayerState do
         velocity_y: dy * effective_speed
     }
   end
+
+
+  # def update_position(player, dt) do
+  #   # Calculate velocity based on input
+  #   dx = input_to_direction(player.input.d, player.input.a)
+  #   dy = input_to_direction(player.input.s, player.input.w)
+
+  #   # Normalize diagonal movement
+  #   {dx, dy} = normalize_direction(dx, dy)
+
+  #   # Apply speed
+  #   effective_speed = player.base_speed * player.speed_multiplier
+
+  #   new_x = player.x + dx * effective_speed * dt
+  #   new_y = player.y + dy * effective_speed * dt
+
+  #   %{
+  #     player
+  #     | x: new_x,
+  #       y: new_y,
+  #       velocity_x: dx * effective_speed,
+  #       velocity_y: dy * effective_speed
+  #   }
+  # end
 
   @doc """
   Clamps player position within grid bounds.
@@ -106,13 +148,35 @@ defmodule Backend.Matches.PlayerState do
   @doc """
   Checks if player can move to a tile (not wall/hole).
   """
+  # Maya
   def can_move_to?(_player, map_tiles, new_x, new_y) do
-    # Check the tile at the new position
     tile_x = trunc(new_x)
     tile_y = trunc(new_y)
-    tile = Map.get(map_tiles, {tile_x, tile_y}, :walkable)
+
+    # If a tile isn't in map_tiles, treat it as a wall, not walkable
+    tile = Map.get(map_tiles, {tile_x, tile_y}, :wall)
+
+    # Only allow walkable + generator (you can add mirrors back if you want them walkable)
     tile in [:walkable, :generator]
   end
+  # def can_move_to?(_player, map_tiles, new_x, new_y) do
+  #   tile_x = trunc(new_x)
+  #   tile_y = trunc(new_y)
+
+  #   tile = Map.get(map_tiles, {tile_x, tile_y}, :walkable)
+
+  #   # Allow standing on: walkable, generators, mirrors
+  #   tile in [:walkable, :generator, :mirror_ne, :mirror_nw]
+  # end
+
+  #non mayas
+  # def can_move_to?(_player, map_tiles, new_x, new_y) do
+  #   # Check the tile at the new position
+  #   tile_x = trunc(new_x)
+  #   tile_y = trunc(new_y)
+  #   tile = Map.get(map_tiles, {tile_x, tile_y}, :walkable)
+  #   tile in [:walkable, :generator]
+  # end
 
   @doc """
   Regenerates energy based on delta time.
