@@ -102,7 +102,7 @@ help:
 	@echo "Elyra Development Commands"
 	@echo ""
 	@echo "Workflows:"
-	@echo "  make dev-local    		- DBs in Docker, run backend and/or frontend locally"
+	@echo "  make dev-local   	- DBs in Docker, run backend and/or frontend locally"
 	@echo "  make dev-frontend  	- DBs + backend in Docker, run frontend locally"
 	@echo "  make dev-full      	- Everything in Docker (prod-like)"
 	@echo "  make dev           	- DBs in Docker, run backend and frontend locally"
