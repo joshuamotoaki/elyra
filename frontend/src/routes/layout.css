@@ -91,3 +91,19 @@
 .focus-ring {
 	@apply ring-2 ring-purple ring-offset-2 ring-offset-white outline-none;
 }
+
+/* Prevent scrollbars and layout shift */
+html,
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+}
+
+/* Prevent text selection during game */
+.no-select {
+	user-select: none;
+	-webkit-user-select: none;
+}

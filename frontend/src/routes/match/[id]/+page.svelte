@@ -196,8 +196,11 @@
 <style>
 	.match-container {
 		min-height: 100vh;
+		height: 100vh;
 		background: #0f172a;
 		color: white;
+		overflow: hidden;
+		position: relative;
 	}
 
 	.loading,

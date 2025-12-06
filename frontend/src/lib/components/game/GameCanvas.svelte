@@ -33,7 +33,7 @@
 	});
 </script>
 
-<div class="game-canvas">
+<div class="game-canvas no-select">
 	<Canvas>
 		<GameScene />
 	</Canvas>
@@ -45,5 +45,11 @@
 		height: 100%;
 		position: absolute;
 		inset: 0;
+		overflow: hidden;
+	}
+
+	.game-canvas :global(canvas) {
+		display: block;
+		outline: none;
 	}
 </style>
