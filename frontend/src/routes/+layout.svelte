@@ -18,6 +18,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>Elyra</title>
 </svelte:head>
 
 {@render children()}
