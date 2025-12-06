@@ -8,6 +8,35 @@
 	const WALL_COLOR = new THREE.Color('#8c8d8f');
 	const GENERATOR_COLOR = new THREE.Color('#fbbf24');
 
+	// 1. Use $state to hold the texture
+	let gradientTexture = $state<THREE.Texture | undefined>(undefined);
+
+	// 2. Use $effect instead of $: to generate the texture once
+	$effect(() => {
+		// Prevent recreating if it already exists
+		if (gradientTexture) return;
+
+		const size = 256;
+		const canvas = document.createElement('canvas');
+		canvas.width = size;
+		canvas.height = size;
+		const ctx = canvas.getContext('2d')!;
+
+		// Your blue gradient for the mirror
+		const gradient = ctx.createLinearGradient(0, 0, 0, size);
+		gradient.addColorStop(0, '#51b4da');
+		gradient.addColorStop(1, '#d7d9da');
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, size, size);
+
+		const tex = new THREE.CanvasTexture(canvas);
+		tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+
+		// Assign to state
+		gradientTexture = tex;
+	});
+
 	// Cache player colors to avoid creating new Color objects
 	const colorCache = new Map<string, THREE.Color>();
 
@@ -90,9 +119,15 @@
 
 <!-- Render walls -->
 {#each wallTiles as tile (tile.key)}
+	{@const isMirror = tile.type !== 'wall'}
 	<T.Mesh position={[tile.x, 0.25, tile.y]}>
 		<T.BoxGeometry args={[0.95, 0.5, 0.95]} />
-		<T.MeshStandardMaterial color={WALL_COLOR} />
+		<T.MeshStandardMaterial
+			map={isMirror ? gradientTexture : undefined}
+			color={!isMirror ? WALL_COLOR : '#ffffff'}
+			roughness={isMirror ? 0.2 : 0.8}
+			metalness={isMirror ? 0.5 : 0.1}
+		/>
 	</T.Mesh>
 {/each}
 
