@@ -11,7 +11,7 @@
 	// Camera is centered on the map
 	const mapCenter = 15; // Center of 30x30 grid
 	const cameraHeight = 80;
-	const cameraDistance = 60;
+	const cameraDistance = 50;
 
 	// Get threlte context for raycasting
 	const { camera, renderer } = useThrelte();
@@ -86,7 +86,7 @@
 <T.OrthographicCamera
 	makeDefault
 	position={[mapCenter + cameraDistance, cameraHeight, mapCenter + cameraDistance]}
-	zoom={8}
+	zoom={16}
 	near={0.1}
 	far={1000}
 >
