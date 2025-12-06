@@ -6,9 +6,6 @@
   "prettier.configPath": "./frontend/.prettierrc",
   "prettier.prettierPath": "./frontend/node_modules/prettier",
 
-  "svelte.plugin.svelte.format.config.prettierPath": "./frontend/node_modules/prettier",
-  "svelte.plugin.svelte.format.config.configPath": "./frontend/.prettierrc",
-
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -16,7 +13,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[svelte]": {
-    "editor.defaultFormatter": "svelte.svelte-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
