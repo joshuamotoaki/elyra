@@ -19,7 +19,7 @@ defmodule BackendWeb.AuthController do
         {:ok, token, _claims} = Guardian.encode_and_sign(user, %{}, ttl: {7, :day})
 
         # Determine redirect based on onboarding status
-        redirect_path = if user.username, do: "/dashboard", else: "/onboarding"
+        redirect_path = if user.username, do: "/lobby", else: "/onboarding"
 
         conn
         |> put_resp_cookie("auth_token", token, http_only: true, max_age: 7 * 24 * 60 * 60)
