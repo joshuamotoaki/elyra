@@ -1,5 +1,5 @@
-import type { User, ApiResponse } from '$lib/api/types';
-import { apiGet, apiPut } from '$lib/api/client';
+import type { User } from '$lib/api';
+import { elyraClient, ElyraAuthenticationError } from '$lib/api';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -14,6 +14,7 @@ class AuthStore {
 			const storedToken = localStorage.getItem(TOKEN_KEY);
 			if (storedToken) {
 				this.token = storedToken;
+				elyraClient.setToken(storedToken);
 			}
 		}
 	}
@@ -28,6 +29,7 @@ class AuthStore {
 
 	setToken(newToken: string): void {
 		this.token = newToken;
+		elyraClient.setToken(newToken);
 		if (typeof window !== 'undefined') {
 			localStorage.setItem(TOKEN_KEY, newToken);
 		}
@@ -40,24 +42,27 @@ class AuthStore {
 		}
 
 		try {
-			const response = await apiGet<ApiResponse<User>>('/users/me');
-			this.user = response.data;
-		} catch {
-			// Token invalid, clear it
-			this.logout();
+			const user = await elyraClient.users.getCurrentUser();
+			this.user = user;
+		} catch (e) {
+			if (e instanceof ElyraAuthenticationError) {
+				// Token invalid, clear it
+				this.logout();
+			}
 		} finally {
 			this.isLoading = false;
 		}
 	}
 
 	async setUsername(username: string): Promise<void> {
-		const response = await apiPut<ApiResponse<User>>('/users/username', { username });
-		this.user = response.data;
+		const user = await elyraClient.users.updateUsername({ username });
+		this.user = user;
 	}
 
 	logout(): void {
 		this.user = null;
 		this.token = null;
+		elyraClient.setToken(null);
 		if (typeof window !== 'undefined') {
 			localStorage.removeItem(TOKEN_KEY);
 		}
