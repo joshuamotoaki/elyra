@@ -234,7 +234,7 @@
 	.match-container {
 		min-height: 100vh;
 		height: 100vh;
-		background: #0f172a;
+		background: #8a75d8;
 		color: white;
 		overflow: hidden;
 		position: relative;
