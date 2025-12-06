@@ -4,6 +4,8 @@
 	import { auth } from '$lib/stores/auth.svelte';
 	import { elyraClient } from '$lib/api';
 	import type { Match } from '$lib/api/types/match';
+	import { PageBackground, Header } from '$lib/components/layout';
+	import { Card, Button, Input, Toggle, Avatar } from '$lib/components/ui';
 
 	const AUTO_REFRESH_INTERVAL = 10000; // 10 seconds
 
@@ -98,149 +100,201 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-900 text-white p-8">
-	<div class="max-w-4xl mx-auto">
+<PageBackground>
+	<div class="min-h-screen">
 		<!-- Header -->
-		<div class="flex items-center justify-between mb-8">
-			<h1 class="text-3xl font-bold">Game Lobby</h1>
-			{#if auth.user}
-				<div class="flex items-center gap-4">
-					<div class="flex items-center gap-2">
-						{#if auth.user.picture}
-							<img src={auth.user.picture} alt="Profile" class="h-8 w-8 rounded-full" />
-						{/if}
-						<span class="text-gray-300">@{auth.user.username}</span>
-					</div>
-					<button
-						onclick={handleLogout}
-						class="rounded bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 transition-colors"
-					>
-						Logout
-					</button>
-				</div>
-			{/if}
-		</div>
+		<Header user={auth.user} onLogout={handleLogout} />
 
-		<!-- Error Display -->
-		{#if error}
-			<div class="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-6">
-				{error}
+		<!-- Main Content -->
+		<div class="max-w-4xl mx-auto px-6 pb-12">
+			<!-- Page Title -->
+			<div class="mb-8">
+				<h2 class="text-2xl font-semibold text-slate-800">Game Lobby</h2>
+				<p class="text-slate-600">Create or join a match to play</p>
 			</div>
-		{/if}
 
-		<!-- Create / Join Section -->
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-			<!-- Create Match -->
-			<div class="bg-gray-800 rounded-lg p-6">
-				<h2 class="text-xl font-semibold mb-4">Create Match</h2>
-				<p class="text-gray-400 mb-4">Start a new game and invite friends with your match code.</p>
+			<!-- Error Display -->
+			{#if error}
+				<Card variant="flat" padding="md" class="mb-6 border border-error bg-error/10">
+					<p class="text-error font-medium">{error}</p>
+				</Card>
+			{/if}
 
-				<!-- Public/Private Toggle -->
-				<div class="flex items-center justify-between mb-4 p-3 bg-gray-700 rounded-lg">
+			<!-- Create / Join Section -->
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+				<!-- Create Match -->
+				<Card variant="elevated" padding="lg">
+					<h3 class="text-lg font-semibold text-slate-800 mb-2">Create Match</h3>
+					<p class="text-slate-500 text-sm mb-6">
+						Start a new game and invite friends with your match code.
+					</p>
+
+					<!-- Public/Private Toggle -->
+					<div class="mb-6">
+						<Toggle
+							bind:checked={isPublic}
+							label={isPublic ? 'Public Match' : 'Private Match'}
+							description={isPublic ? 'Anyone can see and join' : 'Join by code only'}
+						/>
+					</div>
+
+					<Button
+						onclick={createMatch}
+						disabled={isCreating}
+						loading={isCreating}
+						variant="primary"
+						size="lg"
+						class="w-full"
+					>
+						Create Match
+					</Button>
+				</Card>
+
+				<!-- Join by Code -->
+				<Card variant="elevated" padding="lg">
+					<h3 class="text-lg font-semibold text-slate-800 mb-2">Join by Code</h3>
+					<p class="text-slate-500 text-sm mb-6">
+						Enter a 6-character code to join a friend's game.
+					</p>
+					<div class="flex gap-3">
+						<div class="flex-1">
+							<Input
+								bind:value={joinCode}
+								placeholder="ABC123"
+								maxlength={6}
+								class="uppercase tracking-widest text-center font-mono text-lg"
+							/>
+						</div>
+						<Button
+							onclick={joinByCode}
+							disabled={isJoining || !joinCode.trim()}
+							loading={isJoining}
+							variant="secondary"
+							size="lg"
+						>
+							Join
+						</Button>
+					</div>
+				</Card>
+			</div>
+
+			<!-- Available Matches -->
+			<Card variant="elevated" padding="lg">
+				<div class="flex items-center justify-between mb-6">
 					<div>
-						<div class="font-medium">{isPublic ? 'Public Match' : 'Private Match'}</div>
-						<div class="text-sm text-gray-400">
-							{isPublic ? 'Anyone can see and join' : 'Join by code only'}
+						<h3 class="text-lg font-semibold text-slate-800">Available Matches</h3>
+						<p class="text-slate-500 text-sm">Public games you can join</p>
+					</div>
+					<Button onclick={loadMatches} disabled={isLoading} variant="ghost" size="sm">
+						{#if isLoading}
+							<svg
+								class="animate-spin h-4 w-4 mr-2"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								></circle>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								></path>
+							</svg>
+							Loading
+						{:else}
+							Refresh
+						{/if}
+					</Button>
+				</div>
+
+				{#if isLoading}
+					<div class="text-center py-12">
+						<div class="inline-flex items-center gap-2 text-slate-500">
+							<svg
+								class="animate-spin h-5 w-5"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								></circle>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								></path>
+							</svg>
+							<span>Loading matches...</span>
 						</div>
 					</div>
-					<button
-						onclick={() => (isPublic = !isPublic)}
-						class="relative w-12 h-6 rounded-full transition-colors {isPublic
-							? 'bg-blue-600'
-							: 'bg-gray-600'}"
-						type="button"
-						role="switch"
-						aria-checked={isPublic}
-						aria-label="Toggle match visibility"
-					>
-						<span
-							class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform {isPublic
-								? 'translate-x-6'
-								: 'translate-x-0'}"
-						></span>
-					</button>
-				</div>
-
-				<button
-					onclick={createMatch}
-					disabled={isCreating}
-					class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-				>
-					{isCreating ? 'Creating...' : 'Create Match'}
-				</button>
-			</div>
-
-			<!-- Join by Code -->
-			<div class="bg-gray-800 rounded-lg p-6">
-				<h2 class="text-xl font-semibold mb-4">Join by Code</h2>
-				<p class="text-gray-400 mb-4">Enter a 6-character code to join a friend's game.</p>
-				<div class="flex gap-2">
-					<input
-						type="text"
-						bind:value={joinCode}
-						placeholder="ABC123"
-						maxlength="6"
-						class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white uppercase tracking-widest text-center font-mono text-lg focus:outline-none focus:border-blue-500"
-					/>
-					<button
-						onclick={joinByCode}
-						disabled={isJoining || !joinCode.trim()}
-						class="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-					>
-						{isJoining ? '...' : 'Join'}
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<!-- Available Matches -->
-		<div class="bg-gray-800 rounded-lg p-6">
-			<div class="flex items-center justify-between mb-4">
-				<h2 class="text-xl font-semibold">Available Matches</h2>
-				<button onclick={loadMatches} disabled={isLoading} class="text-gray-400 hover:text-white">
-					{isLoading ? 'Loading...' : 'Refresh'}
-				</button>
-			</div>
-
-			{#if isLoading}
-				<div class="text-center py-8 text-gray-400">Loading matches...</div>
-			{:else if matches.length === 0}
-				<div class="text-center py-8 text-gray-400">
-					No matches available. Create one to get started!
-				</div>
-			{:else}
-				<div class="space-y-3">
-					{#each matches as match}
+				{:else if matches.length === 0}
+					<div class="text-center py-12">
 						<div
-							class="flex items-center justify-between bg-gray-700 rounded-lg px-4 py-3 hover:bg-gray-650"
+							class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center"
 						>
-							<div class="flex items-center gap-4">
-								{#if match.host.picture}
-									<img src={match.host.picture} alt="" class="w-10 h-10 rounded-full" />
-								{:else}
-									<div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-										{(match.host.username || match.host.name || '?')[0].toUpperCase()}
-									</div>
-								{/if}
-								<div>
-									<div class="font-medium">
-										{match.host.username || match.host.name || 'Unknown'}'s game
-									</div>
-									<div class="text-sm text-gray-400">
-										{match.player_count}/4 players &bull; Code: {match.code}
+							<svg
+								class="w-8 h-8 text-slate-400"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+								/>
+							</svg>
+						</div>
+						<p class="text-slate-600 font-medium">No matches available</p>
+						<p class="text-slate-500 text-sm mt-1">Create one to get started!</p>
+					</div>
+				{:else}
+					<div class="space-y-3">
+						{#each matches as match}
+							<div
+								class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 hover:border-slate-200 transition-colors"
+							>
+								<div class="flex items-center gap-4">
+									<Avatar
+										src={match.host.picture}
+										fallback={match.host.username || match.host.name || '?'}
+										size="md"
+									/>
+									<div>
+										<div class="font-medium text-slate-700">
+											{match.host.username || match.host.name || 'Unknown'}'s game
+										</div>
+										<div class="text-sm text-slate-500">
+											{match.player_count}/4 players
+											<span class="mx-2 text-slate-300">&bull;</span>
+											<span class="font-mono text-xs bg-slate-200 px-2 py-0.5 rounded"
+												>{match.code}</span
+											>
+										</div>
 									</div>
 								</div>
+								<Button onclick={() => joinMatch(match.id)} variant="primary" size="sm">
+									Join
+								</Button>
 							</div>
-							<button
-								onclick={() => joinMatch(match.id)}
-								class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-							>
-								Join
-							</button>
-						</div>
-					{/each}
-				</div>
-			{/if}
+						{/each}
+					</div>
+				{/if}
+			</Card>
 		</div>
 	</div>
-</div>
+</PageBackground>
