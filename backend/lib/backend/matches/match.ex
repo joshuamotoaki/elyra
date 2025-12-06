@@ -5,8 +5,6 @@ defmodule Backend.Matches.Match do
   schema "matches" do
     field :code, :string
     field :status, :string, default: "waiting"
-    field :grid_size, :integer, default: 4
-    field :duration_seconds, :integer, default: 30
     field :is_public, :boolean, default: true
     field :final_state, :map
 
@@ -24,8 +22,6 @@ defmodule Backend.Matches.Match do
     |> cast(attrs, [
       :code,
       :status,
-      :grid_size,
-      :duration_seconds,
       :is_public,
       :final_state,
       :host_id,
@@ -33,8 +29,6 @@ defmodule Backend.Matches.Match do
     ])
     |> validate_required([:code, :host_id])
     |> validate_inclusion(:status, ["waiting", "playing", "finished"])
-    |> validate_number(:grid_size, greater_than: 0, less_than_or_equal_to: 10)
-    |> validate_number(:duration_seconds, greater_than: 0, less_than_or_equal_to: 300)
     |> unique_constraint(:code)
     |> foreign_key_constraint(:host_id)
     |> foreign_key_constraint(:winner_id)

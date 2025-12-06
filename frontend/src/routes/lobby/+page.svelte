@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/stores/auth.svelte';
 	import { elyraClient } from '$lib/api';
 	import type { Match } from '$lib/api/types/match';
-	import { PageBackground, Header } from '$lib/components/layout';
-	import { Card, Button, Input, Toggle, Avatar } from '$lib/components/ui';
-	import { SpinnerGap, GameController, ArrowsClockwise } from 'phosphor-svelte';
+	import { Header, PageBackground } from '$lib/components/layout';
+	import { Avatar, Button, Card, Input, Toggle } from '$lib/components/ui';
+	import { auth } from '$lib/stores/auth.svelte';
+	import { ArrowsClockwise, GameController, SpinnerGap } from 'phosphor-svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	const AUTO_REFRESH_INTERVAL = 10000; // 10 seconds
 

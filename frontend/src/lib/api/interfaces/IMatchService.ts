@@ -55,18 +55,11 @@ export interface IMatchService {
 	 *
 	 * @example
 	 * ```typescript
-	 * // Create with defaults (4x4 grid, 30 seconds, public)
+	 * // Create a public match (default)
 	 * const match = await client.matches.createMatch();
 	 *
 	 * // Create a private match
 	 * const match = await client.matches.createMatch({ is_public: false });
-	 *
-	 * // Create with custom settings
-	 * const match = await client.matches.createMatch({
-	 *   grid_size: 5,
-	 *   duration_seconds: 60,
-	 *   is_public: true
-	 * });
 	 * ```
 	 */
 	createMatch(request?: CreateMatchRequest): Promise<Match>;

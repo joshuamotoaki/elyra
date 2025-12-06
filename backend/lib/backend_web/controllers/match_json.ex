@@ -20,8 +20,6 @@ defmodule BackendWeb.MatchJSON do
       id: match.id,
       code: match.code,
       status: match.status,
-      grid_size: match.grid_size,
-      duration_seconds: match.duration_seconds,
       is_public: match.is_public,
       host_id: match.host_id,
       host: host_data(match.host),

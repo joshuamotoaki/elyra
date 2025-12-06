@@ -1,5 +1,4 @@
-import type { MatchState, MatchCallbacks } from '../types/match';
-import type { GameState, GameCallbacks, InputState, PowerUpType } from '../types/game';
+import type { GameCallbacks, GameState, InputState, PowerUpType } from '../types/game';
 
 /**
  * Socket Service Interface
@@ -77,29 +76,6 @@ export interface ISocketService {
 	 * ```
 	 */
 	isConnected(): boolean;
-
-	/**
-	 * Join a match channel for the legacy cell-clicking game.
-	 *
-	 * @deprecated Use {@link joinGame} for the new 3D territory control game
-	 *
-	 * @param matchId - The match ID to join
-	 * @param callbacks - Event handlers for match events
-	 * @returns The initial match state
-	 *
-	 * @throws {Error} If socket is not connected
-	 * @throws {Error} If joining the channel fails
-	 *
-	 * @example
-	 * ```typescript
-	 * const state = await socketService.joinMatch(123, {
-	 *   onPlayerJoined: (event) => handleJoin(event),
-	 *   onCellClaimed: (event) => handleClaim(event),
-	 *   // ... other callbacks
-	 * });
-	 * ```
-	 */
-	joinMatch(matchId: number, callbacks: MatchCallbacks): Promise<MatchState>;
 
 	/**
 	 * Join a match channel for the 3D territory control game.
@@ -230,20 +206,6 @@ export interface ISocketService {
 	 * ```
 	 */
 	buyPowerUp(type: PowerUpType): Promise<void>;
-
-	/**
-	 * Click a cell to claim it.
-	 *
-	 * @deprecated Part of the legacy cell-clicking game. Use beams for territory capture.
-	 *
-	 * @param row - The row index of the cell
-	 * @param col - The column index of the cell
-	 * @returns Promise that resolves when the click is processed
-	 *
-	 * @throws {Error} If not in a match
-	 * @throws {Error} If the cell is invalid
-	 */
-	clickCell(row: number, col: number): Promise<void>;
 
 	/**
 	 * Leave the current match channel.

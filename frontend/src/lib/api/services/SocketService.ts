@@ -1,32 +1,21 @@
-import { Socket, Channel } from 'phoenix';
+import { Channel, Socket } from 'phoenix';
+import type { ISocketService } from '../interfaces/ISocketService';
 import type {
-	MatchState,
-	MatchCallbacks,
-	PlayerJoinedEvent,
-	PlayerLeftEvent,
-	GameStartedEvent,
-	CellClaimedEvent,
-	TickEvent,
-	GameEndedEvent
-} from '../types/match';
-import type {
-	GameState,
+	BeamEndedEvent,
+	BeamFiredEvent,
+	CoinCollectedEvent,
+	CoinSpawnedEvent,
+	CoinTelegraphEvent,
 	GameCallbacks,
-	InputState,
-	PowerUpType,
-	StateDelta,
+	GameEndedEvent as GameGameEndedEvent,
 	PlayerJoinedEvent as GamePlayerJoinedEvent,
 	PlayerLeftEvent as GamePlayerLeftEvent,
-	GameStartedEvent as GameGameStartedEvent,
-	GameEndedEvent as GameGameEndedEvent,
-	BeamFiredEvent,
-	BeamEndedEvent,
-	CoinTelegraphEvent,
-	CoinSpawnedEvent,
-	CoinCollectedEvent,
-	PowerUpPurchasedEvent
+	GameState,
+	InputState,
+	PowerUpPurchasedEvent,
+	PowerUpType,
+	StateDelta
 } from '../types/game';
-import type { ISocketService } from '../interfaces/ISocketService';
 
 interface ErrorResponse {
 	reason?: string;
@@ -67,46 +56,6 @@ export class SocketService implements ISocketService {
 	 */
 	isConnected(): boolean {
 		return this.socket?.isConnected() ?? false;
-	}
-
-	/**
-	 * Join a match channel (legacy - for old cell-clicking game).
-	 */
-	joinMatch(matchId: number, callbacks: MatchCallbacks): Promise<MatchState> {
-		return new Promise((resolve, reject) => {
-			if (!this.socket) {
-				reject(new Error('Socket not connected'));
-				return;
-			}
-
-			this.leaveMatch();
-			this.matchChannel = this.socket.channel(`match:${matchId}`);
-
-			this.matchChannel.on('player_joined', (payload: unknown) =>
-				callbacks.onPlayerJoined(payload as PlayerJoinedEvent)
-			);
-			this.matchChannel.on('player_left', (payload: unknown) =>
-				callbacks.onPlayerLeft(payload as PlayerLeftEvent)
-			);
-			this.matchChannel.on('game_started', (payload: unknown) =>
-				callbacks.onGameStarted(payload as GameStartedEvent)
-			);
-			this.matchChannel.on('cell_claimed', (payload: unknown) =>
-				callbacks.onCellClaimed(payload as CellClaimedEvent)
-			);
-			this.matchChannel.on('tick', (payload: unknown) => callbacks.onTick(payload as TickEvent));
-			this.matchChannel.on('game_ended', (payload: unknown) =>
-				callbacks.onGameEnded(payload as GameEndedEvent)
-			);
-
-			this.matchChannel
-				.join()
-				.receive('ok', (state: unknown) => resolve(state as MatchState))
-				.receive('error', (reason: unknown) => {
-					const err = reason as ErrorResponse;
-					reject(new Error(err.reason || 'Failed to join match'));
-				});
-		});
 	}
 
 	/**
@@ -209,13 +158,6 @@ export class SocketService implements ISocketService {
 	 */
 	buyPowerUp(type: PowerUpType): Promise<void> {
 		return this.push('buy_powerup', { type });
-	}
-
-	/**
-	 * Click a cell to claim it (legacy).
-	 */
-	clickCell(row: number, col: number): Promise<void> {
-		return this.push('click_cell', { row, col });
 	}
 
 	/**

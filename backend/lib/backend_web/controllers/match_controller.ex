@@ -23,8 +23,6 @@ defmodule BackendWeb.MatchController do
     user = Guardian.Plug.current_resource(conn)
 
     attrs = %{
-      grid_size: Map.get(params, "grid_size", 4),
-      duration_seconds: Map.get(params, "duration_seconds", 30),
       is_public: Map.get(params, "is_public", true)
     }
 
