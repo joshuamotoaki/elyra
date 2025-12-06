@@ -11,7 +11,6 @@ import type {
 } from '$lib/api/types/match';
 
 class MatchStore {
-	// Reactive state using Svelte 5 runes
 	matchId = $state<number | null>(null);
 	code = $state<string | null>(null);
 	status = $state<'waiting' | 'playing' | 'finished'>('waiting');
@@ -24,12 +23,21 @@ class MatchStore {
 	error = $state<string | null>(null);
 	isConnecting = $state(false);
 
+	// Final results - captured when game ends, doesn't change when players leave
+	finalPlayers = $state<Record<number, MatchPlayer>>({});
+	finalGrid = $state<Record<string, number | null>>({});
+
 	get playerList(): MatchPlayer[] {
 		return Object.values(this.players);
 	}
 
 	get playerCount(): number {
 		return Object.keys(this.players).length;
+	}
+
+	// Use final results for the results screen
+	get finalPlayerList(): MatchPlayer[] {
+		return Object.values(this.finalPlayers);
 	}
 
 	/**
@@ -130,6 +138,8 @@ class MatchStore {
 		this.winnerId = null;
 		this.error = null;
 		this.isConnecting = false;
+		this.finalPlayers = {};
+		this.finalGrid = {};
 	}
 
 	// Event handlers
@@ -171,19 +181,23 @@ class MatchStore {
 		this.grid = event.final_grid;
 
 		// Update player scores
+		let finalPlayerData: Record<number, MatchPlayer>;
 		if (event.players) {
-			this.players = event.players;
+			finalPlayerData = event.players;
 		} else {
 			// Update scores from the scores map
-			const updatedPlayers = { ...this.players };
+			finalPlayerData = { ...this.players };
 			for (const [userId, score] of Object.entries(event.scores)) {
 				const id = Number(userId);
-				if (updatedPlayers[id]) {
-					updatedPlayers[id] = { ...updatedPlayers[id], score };
+				if (finalPlayerData[id]) {
+					finalPlayerData[id] = { ...finalPlayerData[id], score };
 				}
 			}
-			this.players = updatedPlayers;
 		}
+
+		this.players = finalPlayerData;
+		this.finalPlayers = finalPlayerData;
+		this.finalGrid = event.final_grid;
 	}
 }
 

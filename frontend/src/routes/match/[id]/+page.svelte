@@ -9,11 +9,13 @@
 	const isHost = $derived(auth.user?.id === matchStore.hostId);
 	const currentUserId = $derived(auth.user?.id);
 
-	// Get winner info
-	const winner = $derived(matchStore.winnerId ? matchStore.players[matchStore.winnerId] : null);
+	// Get winner info (use finalPlayers for results screen)
+	const winner = $derived(
+		matchStore.winnerId ? matchStore.finalPlayers[matchStore.winnerId] : null
+	);
 
-	// Sort players by score for leaderboard
-	const sortedPlayers = $derived(matchStore.playerList.sort((a, b) => b.score - a.score));
+	// Sort players by score for leaderboard (use finalPlayerList for results screen)
+	const sortedPlayers = $derived(matchStore.finalPlayerList.toSorted((a, b) => b.score - a.score));
 
 	onMount(async () => {
 		if (!auth.token) {
@@ -45,6 +47,15 @@
 		const ownerId = matchStore.grid[key];
 		if (ownerId && matchStore.players[ownerId]) {
 			return matchStore.players[ownerId].color;
+		}
+		return null;
+	}
+
+	function getFinalCellColor(row: number, col: number): string | null {
+		const key = `${row},${col}`;
+		const ownerId = matchStore.finalGrid[key];
+		if (ownerId && matchStore.finalPlayers[ownerId]) {
+			return matchStore.finalPlayers[ownerId].color;
 		}
 		return null;
 	}
@@ -233,7 +244,7 @@
 				>
 					{#each Array(matchStore.gridSize) as _, row}
 						{#each Array(matchStore.gridSize) as _, col}
-							{@const cellColor = getCellColor(row, col)}
+							{@const cellColor = getFinalCellColor(row, col)}
 							<div
 								class="aspect-square rounded"
 								style={cellColor ? `background-color: ${cellColor}` : 'background-color: #374151'}
