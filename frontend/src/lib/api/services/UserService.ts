@@ -22,8 +22,7 @@ export class UserService implements IUserService {
 
 	async checkUsernameAvailability(username: string): Promise<UsernameAvailabilityResponse> {
 		return this.httpClient.get<UsernameAvailabilityResponse>(
-			`/users/check-username?username=${encodeURIComponent(username)}`,
-			{ auth: false }
+			`/users/check-username?username=${encodeURIComponent(username)}`
 		);
 	}
 }

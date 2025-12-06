@@ -40,8 +40,6 @@ defmodule BackendWeb.Router do
   # Public API routes
   scope "/api", BackendWeb do
     pipe_through(:api)
-
-    get("/users/check-username", UserController, :check_username)
   end
 
   # Protected API routes
@@ -49,6 +47,7 @@ defmodule BackendWeb.Router do
     pipe_through([:api, :authenticated])
 
     get("/users/me", UserController, :me)
+    get("/users/check-username", UserController, :check_username)
     put("/users/username", UserController, :set_username)
 
     # Match routes

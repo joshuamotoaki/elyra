@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { auth } from '$lib/stores/auth.svelte';
+	import { elyraClient } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { PageBackground } from '$lib/components/layout';
@@ -31,11 +32,8 @@
 
 		isChecking = true;
 		try {
-			const response = await fetch(
-				`http://localhost:4000/api/users/check-username?username=${encodeURIComponent(value)}`
-			);
-			const data = await response.json();
-			isAvailable = data.available;
+			const result = await elyraClient.users.checkUsernameAvailability(value);
+			isAvailable = result.available;
 		} catch {
 			isAvailable = null;
 		} finally {
@@ -47,6 +45,7 @@
 		const value = (e.target as HTMLInputElement).value;
 		username = value.toLowerCase().replace(/[^a-z0-9_]/g, '');
 
+		// Debounce username check
 		clearTimeout(checkTimeout);
 		checkTimeout = setTimeout(() => checkUsername(username), 300);
 	}
