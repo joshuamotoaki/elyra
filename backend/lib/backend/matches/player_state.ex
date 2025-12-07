@@ -156,7 +156,7 @@ defmodule Backend.Matches.PlayerState do
     # If a tile isn't in map_tiles, treat it as a wall, not walkable
     tile = Map.get(map_tiles, {tile_x, tile_y}, :wall)
 
-    # Only allow walkable + generator (you can add mirrors back if you want them walkable)
+    # Only allow walkable + generator (can add mirrors back if we want them walkable)
     tile in [:walkable, :generator]
   end
   # def can_move_to?(_player, map_tiles, new_x, new_y) do
