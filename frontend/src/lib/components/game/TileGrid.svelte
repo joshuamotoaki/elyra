@@ -107,7 +107,7 @@
 		return NEUTRAL_COLOR;
 	}
 
-	function darken(color, amount = 0.5) {
+	function darken(color: string | THREE.Color | undefined, amount = 0.5) {
 		// color: hex string or THREE.Color
 		const c = new THREE.Color(color);
 		c.multiplyScalar(amount); // 1 = original, 0 = black
