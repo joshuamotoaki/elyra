@@ -6,7 +6,7 @@
 	// Colors for different tile states - cached
 	const NEUTRAL_COLOR = new THREE.Color('#ffffff');
 	const WALL_COLOR = new THREE.Color('#8c8d8f');
-	const GENERATOR_COLOR = new THREE.Color('#fbbf24');
+	const GENERATOR_COLOR = new THREE.Color('#ffffff');
 
 	// 1. Use $state to hold the texture
 	let gradientTexture = $state<THREE.Texture | undefined>(undefined);
@@ -106,6 +106,13 @@
 
 		return NEUTRAL_COLOR;
 	}
+
+	function darken(color, amount = 0.5) {
+		// color: hex string or THREE.Color
+		const c = new THREE.Color(color);
+		c.multiplyScalar(amount); // 1 = original, 0 = black
+		return c;
+	}
 </script>
 
 <!-- Render walkable tiles and generators -->
@@ -131,13 +138,18 @@
 	</T.Mesh>
 {/each}
 
+<!-- COIN LOOK -->
+<!-- <T.CylinderGeometry args={[0.3, 0.3, 0.3, 8]} />
+<T.MeshStandardMaterial color={ownerColor} emissive={ownerColor} emissiveIntensity={0.5} /> -->
+
 <!-- Generator glow indicators -->
 {#each gameStore.generators as gen}
 	{@const genKey = `${gen.x},${gen.y}`}
 	{@const owner = gameStore.tileOwners.get(genKey)}
-	{@const ownerColor = owner ? gameStore.getPlayerColor(owner) : '#fbbf24'}
-	<T.Mesh position={[gen.x, 0.2, gen.y]}>
-		<T.CylinderGeometry args={[0.3, 0.3, 0.3, 8]} />
-		<T.MeshStandardMaterial color={ownerColor} emissive={ownerColor} emissiveIntensity={0.5} />
+	{@const baseColor = owner ? gameStore.getPlayerColor(owner) : GENERATOR_COLOR}
+	{@const ownerColor = owner ? darken(baseColor, 0.35) : baseColor}
+	<T.Mesh position={[gen.x, 0.1, gen.y]}>
+		<T.BoxGeometry args={[0.4, 0.4, 0.4]} />
+		<T.MeshStandardMaterial color={ownerColor} emissive={ownerColor} emissiveIntensity={0.4} />
 	</T.Mesh>
 {/each}
