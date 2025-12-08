@@ -7,6 +7,7 @@
 	import { socketService } from '$lib/api/services/SocketService';
 	import GameCanvas from '$lib/components/game/GameCanvas.svelte';
 	import GameHUD from '$lib/components/game/GameHUD.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 
 	const matchId = $derived(Number($page.params.id));
 	const isHost = $derived(auth.user?.id === gameStore.hostId);
@@ -120,7 +121,7 @@
 						<div class="player-item">
 							<div class="player-color" style="background-color: {player.color}"></div>
 							{#if player.picture}
-								<img src={player.picture} alt="" class="player-avatar" />
+								<Avatar src={player.picture} fallback={player.username || '?'} size="sm" />
 							{:else}
 								<div class="player-avatar-placeholder">
 									{(player.username || '?')[0].toUpperCase()}

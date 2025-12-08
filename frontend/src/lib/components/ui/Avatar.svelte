@@ -18,7 +18,13 @@
 </script>
 
 {#if src}
-	<img {src} alt="" class="rounded-full object-cover {sizes[size]} {className}" />
+	<img
+		{src}
+		alt=""
+		crossOrigin="anonymous"
+		referrerPolicy="no-referrer"
+		class="rounded-full object-cover {sizes[size]} {className}"
+	/>
 {:else}
 	<div
 		class="
