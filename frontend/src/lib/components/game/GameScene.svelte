@@ -83,10 +83,10 @@
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} />
 
 <!-- Isometric-style camera centered on map -->
-<T.OrthographicCamera
+<T.PerspectiveCamera
 	makeDefault
 	position={[mapCenter + cameraDistance, cameraHeight, mapCenter + cameraDistance]}
-	zoom={16}
+	fov={45}
 	near={0.1}
 	far={1000}
 >
@@ -104,7 +104,7 @@
 			maxPolarAngle={Math.PI / 2.5}
 		/>
 	{/snippet}
-</T.OrthographicCamera>
+</T.PerspectiveCamera>
 
 <!-- Lighting - Monument Valley style -->
 <T.AmbientLight intensity={0.8} color="#ffffff" />
