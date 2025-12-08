@@ -121,7 +121,6 @@
 						<div class="player-item">
 							<div class="player-color" style="background-color: {player.color}"></div>
 							{#if player.picture}
-								<!-- <img src={player.picture} alt="" class="player-avatar" /> -->
 								<Avatar src={player.picture} fallback={player.username || '?'} size="sm" />
 							{:else}
 								<div class="player-avatar-placeholder">
