@@ -304,10 +304,11 @@ class GameStore {
 	 */
 	private isPositionBlocked(x: number, y: number): boolean {
 		// Get bounding box of tiles the player could touch
-		const minTileX = Math.floor(x - PLAYER_RADIUS);
-		const maxTileX = Math.floor(x + PLAYER_RADIUS);
-		const minTileY = Math.floor(y - PLAYER_RADIUS);
-		const maxTileY = Math.floor(y + PLAYER_RADIUS);
+		// Expand by 1 to account for centered tile coordinates (tiles span n-0.5 to n+0.5)
+		const minTileX = Math.floor(x - PLAYER_RADIUS) - 1;
+		const maxTileX = Math.floor(x + PLAYER_RADIUS) + 1;
+		const minTileY = Math.floor(y - PLAYER_RADIUS) - 1;
+		const maxTileY = Math.floor(y + PLAYER_RADIUS) + 1;
 
 		for (let tx = minTileX; tx <= maxTileX; tx++) {
 			for (let ty = minTileY; ty <= maxTileY; ty++) {

@@ -443,11 +443,11 @@ defmodule Backend.Matches.MatchServer do
   # Check if a circular player can occupy a position without overlapping blocking tiles
   defp can_occupy?(x, y, map_tiles, radius) do
     # Get bounding box of tiles the player could touch
-    # Use floor() not trunc() for symmetric collision from all directions
-    min_tile_x = floor(x - radius)
-    max_tile_x = floor(x + radius)
-    min_tile_y = floor(y - radius)
-    max_tile_y = floor(y + radius)
+    # Expand by 1 to account for centered tile coordinates (tiles span n-0.5 to n+0.5)
+    min_tile_x = floor(x - radius) - 1
+    max_tile_x = floor(x + radius) + 1
+    min_tile_y = floor(y - radius) - 1
+    max_tile_y = floor(y + radius) + 1
 
     # Check each tile in the bounding box
     not Enum.any?(min_tile_x..max_tile_x, fn tx ->
