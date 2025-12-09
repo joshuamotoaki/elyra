@@ -600,7 +600,13 @@ defmodule Backend.Matches.MatchServer do
              y: p.y,
              energy: p.energy,
              coins: p.coins,
-             glow_radius: p.glow_radius
+             glow_radius: p.glow_radius,
+             speed_stacks: p.speed_stacks,
+             radius_stacks: p.radius_stacks,
+             energy_stacks: p.energy_stacks,
+             has_multishot: p.has_multishot,
+             has_piercing: p.has_piercing,
+             has_beam_speed: p.has_beam_speed
            }}
         end)
         |> Map.new(),

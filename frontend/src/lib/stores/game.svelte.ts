@@ -380,35 +380,6 @@ class GameStore {
 	 */
 	handlePowerUpPurchased(userId: number, type: string) {
 		// State will be updated via next delta
-		const player = this.players.get(userId);
-		if (!player) return;
-
-		const updatedPlayer = { ...player };
-
-		switch (type) {
-			case 'multishot':
-				updatedPlayer.has_multishot = true;
-				break;
-			case 'piercing':
-				updatedPlayer.has_piercing = true;
-				break;
-			case 'beam_speed':
-				updatedPlayer.has_beam_speed = true;
-				break;
-			case 'speed':
-				updatedPlayer.speed_stacks = (updatedPlayer.speed_stacks ?? 0) + 1;
-				break;
-			case 'radius':
-				updatedPlayer.radius_stacks = (updatedPlayer.radius_stacks ?? 0) + 1;
-				break;
-			case 'energy':
-				updatedPlayer.energy_stacks = (updatedPlayer.energy_stacks ?? 0) + 1;
-				break;
-		}
-
-		// Update players map reactively
-		this.players = new Map(this.players).set(userId, updatedPlayer);
-
 		console.log(`Player ${userId} purchased ${type}`);
 	}
 
