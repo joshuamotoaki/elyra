@@ -113,29 +113,42 @@
 		c.multiplyScalar(amount); // 1 = original, 0 = black
 		return c;
 	}
+
+	const groutGeo = new THREE.BoxGeometry(1.0, 0.1, 1.0);
+	const tileGeo = new THREE.BoxGeometry(0.95, 0.1, 0.95);
+	const wallGeo = new THREE.BoxGeometry(0.95, 0.5, 0.95);
+	const groutMaterial = new THREE.MeshStandardMaterial({ color: '#b7b7b7' });
 </script>
 
 <!-- Render walkable tiles and generators -->
 {#each walkableTiles as tile (tile.key)}
 	{@const color = getTileColor(tile.key, tile.type)}
-	<T.Mesh position={[tile.x, 0, tile.y]}>
-		<T.BoxGeometry args={[0.95, 0.1, 0.95]} />
-		<T.MeshStandardMaterial {color} />
-	</T.Mesh>
+
+	<T.Group position={[tile.x, 0, tile.y]}>
+		<T.Mesh position={[0, -0.04, 0]} geometry={groutGeo} material={groutMaterial} />
+
+		<T.Mesh position={[0, 0, 0]} geometry={tileGeo}>
+			<T.MeshStandardMaterial {color} />
+		</T.Mesh>
+	</T.Group>
 {/each}
 
 <!-- Render walls -->
 {#each wallTiles as tile (tile.key)}
 	{@const isMirror = tile.type !== 'wall'}
-	<T.Mesh position={[tile.x, 0.25, tile.y]}>
-		<T.BoxGeometry args={[0.95, 0.5, 0.95]} />
-		<T.MeshStandardMaterial
-			map={isMirror ? gradientTexture : undefined}
-			color={!isMirror ? WALL_COLOR : '#ffffff'}
-			roughness={isMirror ? 0.2 : 0.8}
-			metalness={isMirror ? 0.5 : 0.1}
-		/>
-	</T.Mesh>
+
+	<T.Group position={[tile.x, 0, tile.y]}>
+		<T.Mesh position={[0, -0.04, 0]} geometry={groutGeo} material={groutMaterial} />
+
+		<T.Mesh position={[0, 0.25, 0]} geometry={wallGeo}>
+			<T.MeshStandardMaterial
+				map={isMirror ? gradientTexture : undefined}
+				color={!isMirror ? WALL_COLOR : '#ffffff'}
+				roughness={isMirror ? 0.2 : 0.8}
+				metalness={isMirror ? 0.5 : 0.1}
+			/>
+		</T.Mesh>
+	</T.Group>
 {/each}
 
 <!-- COIN LOOK -->

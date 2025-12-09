@@ -108,10 +108,12 @@
 						onclick={() => handleBuyPowerUp(pu.type)}
 					>
 						<span class="powerup-icon">{pu.icon}</span>
-						<span class="powerup-name">{pu.name}</span>
-						{#if isStackable && stacks > 0}
-							<span class="powerup-stacks">x{stacks}</span>
-						{/if}
+						<span class="powerup-name">
+							{pu.name}<span class="powerup-stacks"
+								>{#if isStackable && stacks > 0}
+									&nbsp;x {stacks}{/if}</span
+							>
+						</span>
 						{#if !owned}
 							<span class="powerup-cost">{cost}💰</span>
 						{/if}
@@ -267,7 +269,6 @@
 	}
 
 	.powerup-stacks {
-		font-size: 0.625rem;
 		color: #fbbf24;
 	}
 

@@ -10,8 +10,8 @@
 
 	// Camera is centered on the map
 	const mapCenter = 15; // Center of 30x30 grid
-	const cameraHeight = 80;
-	const cameraDistance = 50;
+	const cameraHeight = 40;
+	const cameraDistance = 28;
 
 	// Get threlte context for raycasting
 	const { camera, renderer } = useThrelte();
@@ -78,6 +78,15 @@
 			shootTowardsCursor();
 		}
 	}
+
+	// fix camera original position
+	let controls: any = $state(undefined);
+	$effect(() => {
+		if (controls) {
+			controls.target.set(mapCenter, 0, mapCenter);
+			controls.update();
+		}
+	});
 </script>
 
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} />
@@ -92,6 +101,7 @@
 >
 	{#snippet children({ ref })}
 		<OrbitControls
+			bind:ref={controls}
 			enableRotate={true}
 			enableZoom={true}
 			enablePan={false}
@@ -110,11 +120,11 @@
 <T.AmbientLight intensity={0.8} color="#ffffff" />
 <T.DirectionalLight
 	position={[50, 100, 50]}
-	intensity={0.9}
+	intensity={2}
 	color="#fff5e6"
 	castShadow
-	shadow.mapSize.width={2048}
-	shadow.mapSize.height={2048}
+	shadow.mapSize.width={1024}
+	shadow.mapSize.height={1024}
 />
 
 <!-- Background -->
