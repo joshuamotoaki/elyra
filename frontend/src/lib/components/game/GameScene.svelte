@@ -27,8 +27,30 @@
 	let mouseClientY = 0;
 
 	function handleMouseMove(event: MouseEvent) {
+		// 1. Standard mouse tracking
 		mouseClientX = event.clientX;
 		mouseClientY = event.clientY;
+
+		// 2. IMMEDIATE Raycasting (formerly in shootTowardsCursor)
+		const canvas = renderer.domElement;
+		const rect = canvas.getBoundingClientRect();
+		const cam = camera.current;
+
+		if (!cam) return;
+
+		// Convert to -1 to +1 coords
+		mouse.x = ((mouseClientX - rect.left) / rect.width) * 2 - 1;
+		mouse.y = -((mouseClientY - rect.top) / rect.height) * 2 + 1;
+
+		raycaster.setFromCamera(mouse, cam);
+
+		// Intersect with ground
+		const hit = raycaster.ray.intersectPlane(groundPlane, worldPoint);
+
+		if (hit) {
+			// 3. Update the store immediately
+			gameStore.cursorWorldPosition = { x: worldPoint.x, z: worldPoint.z };
+		}
 	}
 
 	// Shoot towards mouse cursor position
@@ -38,37 +60,22 @@
 		const player = gameStore.localPlayer;
 		if (!player) return;
 
-		const canvas = renderer.domElement;
-		const rect = canvas.getBoundingClientRect();
-
-		// Convert mouse position to normalized device coordinates (-1 to +1)
-		mouse.x = ((mouseClientX - rect.left) / rect.width) * 2 - 1;
-		mouse.y = -((mouseClientY - rect.top) / rect.height) * 2 + 1;
-
-		const cam = camera.current;
-		if (!cam) return;
-
-		raycaster.setFromCamera(mouse, cam);
-
-		// Find where the ray intersects the ground plane (y=0)
-		const hit = raycaster.ray.intersectPlane(groundPlane, worldPoint);
-		if (!hit) return;
-
-		// Calculate direction from player to cursor point
+		// Get player position
 		const playerX = gameStore.localVisualX;
 		const playerZ = gameStore.localVisualY;
 
-		const dx = worldPoint.x - playerX;
-		const dz = worldPoint.z - playerZ;
+		// Get target from the STORE (updated by handleMouseMove)
+		const targetX = gameStore.cursorWorldPosition.x;
+		const targetZ = gameStore.cursorWorldPosition.z;
 
-		// Normalize the direction
+		const dx = targetX - playerX;
+		const dz = targetZ - playerZ;
+
+		// Normalize and shoot
 		const length = Math.sqrt(dx * dx + dz * dz);
 		if (length < 0.1) return;
 
-		const dirX = dx / length;
-		const dirY = dz / length;
-
-		socketService.shoot(dirX, dirY);
+		socketService.shoot(dx / length, dz / length);
 	}
 
 	// Handle spacebar for shooting

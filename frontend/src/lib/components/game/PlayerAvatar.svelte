@@ -16,6 +16,8 @@
 	let displayY = $state(0);
 	let displayZ = $state(0);
 
+	let indicatorRotation = $state(0);
+
 	// Glow ring rotation
 	let glowRotation = $state(0);
 
@@ -25,6 +27,14 @@
 			// Local player uses visual position for immediate feedback
 			displayX = gameStore.localVisualX;
 			displayZ = gameStore.localVisualY;
+
+			const dx = gameStore.cursorWorldPosition.x - displayX;
+			const dz = gameStore.cursorWorldPosition.z - displayZ;
+
+			// 2. Calculate angle (atan2 is perfect for X/Y coordinates)
+			// We subtract Math.PI/2 because the cylinder geometry is likely
+			// oriented incorrectly by default. You might need to tweak this offset.
+			indicatorRotation = Math.atan2(dz, dx);
 		} else {
 			// Remote players use interpolated position
 			const interp = gameStore.getInterpolatedPosition(userId);
@@ -58,10 +68,12 @@
 		</T.Mesh>
 
 		<!-- Direction indicator -->
-		<T.Mesh position={[0.3, 0.4, 0]} rotation.z={Math.PI / 2}>
-			<T.ConeGeometry args={[0.1, 0.2, 8]} />
-			<T.MeshStandardMaterial {color} />
-		</T.Mesh>
+		<T.Group position={[0, 0.6, 0]} rotation.y={-indicatorRotation}>
+			<T.Mesh position.x={0.4} rotation.z={Math.PI / 2}>
+				<T.CylinderGeometry args={[0.15, 0.15, 0.4]} />
+				<T.MeshStandardMaterial {color} />
+			</T.Mesh>
+		</T.Group>
 
 		<!-- Glow radius indicator (ring on ground) -->
 		<T.Mesh position.y={0.06} rotation.x={-Math.PI / 2} rotation.z={glowRotation}>
