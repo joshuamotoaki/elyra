@@ -661,6 +661,7 @@ defmodule Backend.Matches.MatchServer do
              y: p.y,
              energy: p.energy,
              coins: p.coins,
+             max_energy: p.max_energy,
              glow_radius: p.glow_radius,
              speed_stacks: p.speed_stacks,
              radius_stacks: p.radius_stacks,
