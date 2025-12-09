@@ -146,7 +146,7 @@ defmodule Backend.Matches.PlayerState do
   Attempts to purchase a power-up. Returns {:ok, player} or {:error, reason}.
   """
   def buy_powerup(player, type) do
-    cost = powerup_cost(type)
+    cost = powerup_cost(type, player)
 
     cond do
       player.coins < cost ->
@@ -163,12 +163,23 @@ defmodule Backend.Matches.PlayerState do
   @doc """
   Returns the cost of a power-up.
   """
-  def powerup_cost(:speed), do: 15
-  def powerup_cost(:radius), do: 20
-  def powerup_cost(:energy), do: 20
-  def powerup_cost(:multishot), do: 40
-  def powerup_cost(:piercing), do: 35
-  def powerup_cost(:beam_speed), do: 30
+  def powerup_cost(:speed, player) do
+    base_cost = 15
+    base_cost + player.speed_stacks * 10
+  end
+
+  def powerup_cost(:radius, player) do
+    base_cost = 20
+    base_cost + player.radius_stacks * 10
+  end
+
+  def powerup_cost(:energy, player) do
+    base_cost = 20
+    base_cost + player.energy_stacks * 10
+  end
+  def powerup_cost(:multishot, _player), do: 40
+  def powerup_cost(:piercing, _player), do: 35
+  def powerup_cost(:beam_speed, _player), do: 30
 
   @doc """
   Returns tiles within the player's glow radius.

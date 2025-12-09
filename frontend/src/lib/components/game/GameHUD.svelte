@@ -111,8 +111,8 @@
 						<span class="powerup-icon">{pu.icon}</span>
 						<span class="powerup-name">
 							{pu.name}<span class="powerup-stacks"
-								>{#if isStackable && stacks > 0}
-									&nbsp;x {stacks}{/if}</span
+								>{#if isStackable && stacks >= 0}
+									&nbsp;x {stacks + 2}{/if}</span
 							>
 						</span>
 						{#if !owned}
