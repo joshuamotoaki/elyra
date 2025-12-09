@@ -26,8 +26,9 @@ defmodule Backend.Matches.BeamPhysics do
 
   @doc """
   Creates a new beam from a player position in a given direction.
+  Returns nil if the beam would immediately hit a wall (player standing against wall).
   """
-  def create(player, dir_x, dir_y) do
+  def create(player, dir_x, dir_y, map_tiles) do
     # Normalize direction
     magnitude = :math.sqrt(dir_x * dir_x + dir_y * dir_y)
 
@@ -38,21 +39,33 @@ defmodule Backend.Matches.BeamPhysics do
         {1.0, 0.0}
       end
 
-    speed = if player.has_beam_speed, do: @fast_speed, else: @base_speed
+    # Check if firing direction immediately hits a blocking tile
+    # Look at the tile slightly ahead in the firing direction
+    check_x = player.x + norm_x * 0.6
+    check_y = player.y + norm_y * 0.6
+    check_tile = {trunc(check_x), trunc(check_y)}
+    tile_type = Map.get(map_tiles, check_tile, :boundary)
 
-    %__MODULE__{
-      id: generate_id(),
-      user_id: player.user_id,
-      color: player.color,
-      x: player.x,
-      y: player.y,
-      dir_x: norm_x,
-      dir_y: norm_y,
-      speed: speed,
-      time_alive: 0.0,
-      piercing_used: false,
-      active: true
-    }
+    if tile_type in [:wall, :hole, :boundary] do
+      # Would immediately hit a wall - don't create beam
+      nil
+    else
+      speed = if player.has_beam_speed, do: @fast_speed, else: @base_speed
+
+      %__MODULE__{
+        id: generate_id(),
+        user_id: player.user_id,
+        color: player.color,
+        x: player.x,
+        y: player.y,
+        dir_x: norm_x,
+        dir_y: norm_y,
+        speed: speed,
+        time_alive: 0.0,
+        piercing_used: false,
+        active: true
+      }
+    end
   end
 
   @doc """
@@ -62,10 +75,11 @@ defmodule Backend.Matches.BeamPhysics do
 
   @doc """
   Creates multishot beams (spread pattern).
+  Filters out any nil beams (ones that would immediately hit walls).
   """
-  def create_multishot(player, dir_x, dir_y) do
+  def create_multishot(player, dir_x, dir_y, map_tiles) do
     # Main beam
-    main = create(player, dir_x, dir_y)
+    main = create(player, dir_x, dir_y, map_tiles)
 
     # Rotate by +/- 15 degrees for side beams
     angle = :math.atan2(dir_y, dir_x)
@@ -74,10 +88,11 @@ defmodule Backend.Matches.BeamPhysics do
     left_angle = angle + spread
     right_angle = angle - spread
 
-    left = create(player, :math.cos(left_angle), :math.sin(left_angle))
-    right = create(player, :math.cos(right_angle), :math.sin(right_angle))
+    left = create(player, :math.cos(left_angle), :math.sin(left_angle), map_tiles)
+    right = create(player, :math.cos(right_angle), :math.sin(right_angle), map_tiles)
 
-    [main, left, right]
+    # Filter out nil beams (ones blocked by walls)
+    [main, left, right] |> Enum.reject(&is_nil/1)
   end
 
   @doc """
