@@ -177,6 +177,7 @@ defmodule Backend.Matches.PlayerState do
     base_cost = 20
     base_cost + player.energy_stacks * 10
   end
+
   def powerup_cost(:multishot, _player), do: 40
   def powerup_cost(:piercing, _player), do: 35
   def powerup_cost(:beam_speed, _player), do: 30
