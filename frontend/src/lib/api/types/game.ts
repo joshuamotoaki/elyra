@@ -3,7 +3,7 @@
  */
 
 // Tile types that make up the map
-export type TileType = 'walkable' | 'hole' | 'wall' | 'mirror_ne' | 'mirror_nw' | 'generator';
+export type TileType = 'walkable' | 'hole' | 'wall' | 'mirror' | 'generator';
 
 // Player state from the server
 export interface PlayerState {

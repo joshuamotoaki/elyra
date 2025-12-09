@@ -307,14 +307,17 @@ defmodule Backend.Matches.MatchServer do
               # Create beam(s)
               new_beams =
                 if player.has_multishot do
-                  BeamPhysics.create_multishot(player, dir_x, dir_y)
+                  BeamPhysics.create_multishot(player, dir_x, dir_y, state.map_tiles)
                 else
-                  [BeamPhysics.create(player, dir_x, dir_y)]
+                  case BeamPhysics.create(player, dir_x, dir_y, state.map_tiles) do
+                    nil -> []
+                    beam -> [beam]
+                  end
                 end
 
               new_players = Map.put(state.players, user_id, updated_player)
 
-              # Broadcast beam fired
+              # Broadcast beam fired (only for beams that were actually created)
               Enum.each(new_beams, fn beam ->
                 broadcast(state.match_id, "beam_fired", BeamPhysics.to_map(beam))
               end)
@@ -454,7 +457,7 @@ defmodule Backend.Matches.MatchServer do
       Enum.any?(min_tile_y..max_tile_y, fn ty ->
         tile_type = Map.get(map_tiles, {tx, ty}, :wall)
 
-        is_blocking = tile_type in [:wall, :mirror_ne, :mirror_nw, :hole]
+        is_blocking = tile_type in [:wall, :mirror, :hole]
         is_blocking and circle_intersects_tile?(x, y, radius, tx, ty)
       end)
     end)

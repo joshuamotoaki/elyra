@@ -12,7 +12,7 @@ defmodule Backend.Matches.MapGenerator do
   @mirror_conversion_rate 0.3
   @spawn_clear_radius 5
 
-  @type tile_type :: :walkable | :hole | :wall | :mirror_ne | :mirror_nw | :generator
+  @type tile_type :: :walkable | :hole | :wall | :mirror | :generator
 
   @doc """
   Generates a new game map.
@@ -201,8 +201,7 @@ defmodule Backend.Matches.MapGenerator do
     |> Enum.map(fn
       {pos, :wall} ->
         if :rand.uniform() < @mirror_conversion_rate do
-          mirror_type = Enum.random([:mirror_ne, :mirror_nw])
-          {pos, mirror_type}
+          {pos, :mirror}
         else
           {pos, :wall}
         end
