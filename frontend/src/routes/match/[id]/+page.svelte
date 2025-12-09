@@ -83,11 +83,6 @@
 		} catch (e) {
 			console.error('Failed to start game:', e);
 		} finally {
-			// --- ADDED FOR TESTING ---
-			// Force loading state for 1 second to verify it works
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			// -------------------------
-
 			isStartingGame = false;
 		}
 	}
