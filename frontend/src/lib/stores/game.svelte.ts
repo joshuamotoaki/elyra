@@ -61,6 +61,8 @@ class GameStore {
 	localVisualX = $state(0);
 	localVisualY = $state(0);
 
+	cursorWorldPosition = $state({ x: 0, z: 0 });
+
 	// Current input state
 	currentInput = $state<InputState>({ w: false, a: false, s: false, d: false });
 

@@ -349,12 +349,6 @@
 		height: 1.5rem;
 	}
 
-	.player-avatar {
-		width: 2rem;
-		height: 2rem;
-		border-radius: 50%;
-	}
-
 	.player-avatar-placeholder {
 		width: 2rem;
 		height: 2rem;
@@ -410,22 +404,6 @@
 
 	.btn-primary:hover {
 		background: #2563eb;
-	}
-
-	.btn-start {
-		background: #22c55e;
-		color: white;
-		padding: 1rem 2rem;
-		font-size: 1.25rem;
-	}
-
-	.btn-start:hover:not(:disabled) {
-		background: #16a34a;
-	}
-
-	.btn-start:disabled {
-		background: #4b5563;
-		cursor: not-allowed;
 	}
 
 	.btn-text {
