@@ -8,10 +8,13 @@
 	import GameCanvas from '$lib/components/game/GameCanvas.svelte';
 	import GameHUD from '$lib/components/game/GameHUD.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	const matchId = $derived(Number($page.params.id));
 	const isHost = $derived(auth.user?.id === gameStore.hostId);
 	const currentUserId = $derived(auth.user?.id);
+
+	let isStartingGame = $state(false);
 
 	// Get winner info
 	const winner = $derived(
@@ -74,10 +77,18 @@
 	}
 
 	async function startGame() {
+		isStartingGame = true;
 		try {
 			await socketService.startGame();
 		} catch (e) {
 			console.error('Failed to start game:', e);
+		} finally {
+			// --- ADDED FOR TESTING ---
+			// Force loading state for 1 second to verify it works
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+			// -------------------------
+
+			isStartingGame = false;
 		}
 	}
 </script>
@@ -143,10 +154,12 @@
 
 			<!-- Start Button (Host Only) -->
 			{#if isHost}
-				<button
+				<Button
 					class="btn btn-start"
 					onclick={startGame}
-					disabled={!gameStore.isSolo && gameStore.playerList.length < 2}
+					variant="secondary"
+					loading={isStartingGame}
+					disabled={isStartingGame || (!gameStore.isSolo && gameStore.playerList.length < 2)}
 				>
 					{#if gameStore.isSolo}
 						Start Practice
@@ -155,7 +168,7 @@
 					{:else}
 						Start Game
 					{/if}
-				</button>
+				</Button>
 			{:else}
 				<p class="waiting-text">Waiting for host to start the game...</p>
 			{/if}

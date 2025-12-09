@@ -123,8 +123,8 @@
 	intensity={2}
 	color="#fff5e6"
 	castShadow
-	shadow.mapSize.width={2048}
-	shadow.mapSize.height={2048}
+	shadow.mapSize.width={1024}
+	shadow.mapSize.height={1024}
 />
 
 <!-- Background -->
