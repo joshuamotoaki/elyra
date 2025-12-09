@@ -4,6 +4,7 @@ defmodule Backend.Matches.PlayerState do
   """
 
   @player_colors ["#EF4444", "#3B82F6", "#22C55E", "#F59E0B"]
+  @max_income 300.0
 
   defstruct [
     :user_id,
@@ -137,7 +138,8 @@ defmodule Backend.Matches.PlayerState do
   Adds coins to player.
   """
   def add_coins(player, amount) do
-    %{player | coins: player.coins + amount}
+    new_balance = player.coins + amount
+    %{player | coins: min(new_balance, @max_income)}
   end
 
   @doc """
