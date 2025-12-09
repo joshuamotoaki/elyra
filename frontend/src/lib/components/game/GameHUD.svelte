@@ -94,9 +94,10 @@
 			<div class="shop-title">Power-ups</div>
 			<div class="shop-grid">
 				{#each powerUps as pu}
-					{@const cost = POWERUP_COSTS[pu.type]}
 					{@const owned = hasPowerUp(pu.type)}
 					{@const stacks = getStacks(pu.type)}
+					{@const cost =
+						stacks == 0 ? POWERUP_COSTS[pu.type] : POWERUP_COSTS[pu.type] + stacks * 10}
 					{@const canAfford = player.coins >= cost}
 					{@const isStackable = ['speed', 'radius', 'energy'].includes(pu.type)}
 
