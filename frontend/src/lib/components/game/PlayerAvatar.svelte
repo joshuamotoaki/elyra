@@ -52,11 +52,12 @@
 	let player = $derived(gameStore.players.get(userId));
 	let glowRadius = $derived(player?.glow_radius ?? 1.5);
 
-	const WHITE = new THREE.Color(0xffffff);
+	const BLACK = new THREE.Color(0x000000);
 
 	// Create a NEW color instance, otherwise we mutate the original if we aren't careful
 	// 0.6 means "60% of the way to black"
-	let darkColor = $derived(new THREE.Color(color).lerp(WHITE, -0.02));
+	let darkColor = $derived(new THREE.Color(color).lerp(BLACK, 0.3));
+	let darkerColor = $derived(new THREE.Color(color).lerp(BLACK, 0.6));
 </script>
 
 {#if player}
@@ -64,21 +65,21 @@
 		<!-- Player body (capsule) -->
 		<T.Mesh position.y={0.4}>
 			<T.CapsuleGeometry args={[0.4, 0.6, 8, 16]} />
-			<T.MeshStandardMaterial {color} />
+			<T.MeshStandardMaterial color={darkColor} roughness={0.2} />
 		</T.Mesh>
 
 		<!-- Direction indicator -->
 		<T.Group position={[0, 0.6, 0]} rotation.y={-indicatorRotation}>
 			<T.Mesh position.x={0.4} rotation.z={Math.PI / 2}>
 				<T.CylinderGeometry args={[0.15, 0.15, 0.4]} />
-				<T.MeshStandardMaterial {color} />
+				<T.MeshStandardMaterial color={darkColor} roughness={0.2} />
 			</T.Mesh>
 		</T.Group>
 
 		<!-- Glow radius indicator (ring on ground) -->
 		<T.Mesh position.y={0.06} rotation.x={-Math.PI / 2} rotation.z={glowRotation}>
 			<T.RingGeometry args={[glowRadius - 0.05, glowRadius, 32]} />
-			<T.MeshBasicMaterial color={darkColor} transparent opacity={0.8} side={THREE.DoubleSide} />
+			<T.MeshBasicMaterial color={darkerColor} transparent opacity={0.8} side={THREE.DoubleSide} />
 		</T.Mesh>
 
 		<!-- Local player highlight -->
