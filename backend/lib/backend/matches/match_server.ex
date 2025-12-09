@@ -459,27 +459,26 @@ defmodule Backend.Matches.MatchServer do
         player = Map.get(state.players, beam.user_id)
         has_piercing = player != nil and player.has_piercing
 
-        {updated_beam, captured, ended?} =
+        {updated_beam, captured_tiles, ended?} =
           BeamPhysics.update(beam, dt, state.map_tiles, has_piercing)
+
+        # FIX: Tag the tiles with the owner's ID immediately
+        # converts [{x,y}] -> [{{x,y}, user_id}]
+        tagged_captures = Enum.map(captured_tiles, fn tile -> {tile, beam.user_id} end)
 
         new_beams_acc = if not ended?, do: [updated_beam | beams_acc], else: beams_acc
         new_ended_acc = if ended?, do: [beam.id | ended_acc], else: ended_acc
 
-        {new_beams_acc, captured ++ captured_acc, new_ended_acc}
+        # Add tagged captures to the list
+        {new_beams_acc, tagged_captures ++ captured_acc, new_ended_acc}
       end)
 
     # Capture tiles from beams
     new_tile_owners =
-      Enum.reduce(all_captured, state.tile_owners, fn {tile, user_id}, owners ->
-        if Map.has_key?(owners, tile) do
-          # Find the beam's user_id for this capture
-          beam = Enum.find(state.beams, fn b -> b.id == user_id end)
-
-          if beam do
-            Map.put(owners, tile, beam.user_id)
-          else
-            owners
-          end
+      Enum.reduce(all_captured, state.tile_owners, fn {tile_pos, owner_id}, owners ->
+        if Map.has_key?(owners, tile_pos) do
+          # We now have the correct owner_id directly
+          Map.put(owners, tile_pos, owner_id)
         else
           owners
         end
