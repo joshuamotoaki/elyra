@@ -317,11 +317,7 @@ class GameStore {
 				const tileType = this.mapTiles.get(`${tx},${ty}`);
 
 				const isBlocking =
-					!tileType ||
-					tileType === 'wall' ||
-					tileType === 'mirror_ne' ||
-					tileType === 'mirror_nw' ||
-					tileType === 'hole';
+					!tileType || tileType === 'wall' || tileType === 'mirror' || tileType === 'hole';
 
 				if (isBlocking && this.circleIntersectsTile(x, y, PLAYER_RADIUS, tx, ty)) {
 					return true;

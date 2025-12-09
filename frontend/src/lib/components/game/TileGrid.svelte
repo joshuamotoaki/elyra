@@ -82,7 +82,7 @@
 			for (let y = 0; y < gridSize; y++) {
 				const key = `${x},${y}`;
 				const type = gameStore.mapTiles.get(key) || 'walkable';
-				if (type === 'wall' || type === 'mirror_ne' || type === 'mirror_nw') {
+				if (type === 'wall' || type === 'mirror') {
 					result.push({ x, y, key, type });
 				}
 			}

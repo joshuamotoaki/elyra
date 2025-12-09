@@ -454,7 +454,7 @@ defmodule Backend.Matches.MatchServer do
       Enum.any?(min_tile_y..max_tile_y, fn ty ->
         tile_type = Map.get(map_tiles, {tx, ty}, :wall)
 
-        is_blocking = tile_type in [:wall, :mirror_ne, :mirror_nw, :hole]
+        is_blocking = tile_type in [:wall, :mirror, :hole]
         is_blocking and circle_intersects_tile?(x, y, radius, tx, ty)
       end)
     end)
