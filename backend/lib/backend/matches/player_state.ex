@@ -5,6 +5,7 @@ defmodule Backend.Matches.PlayerState do
 
   @player_colors ["#EF4444", "#3B82F6", "#22C55E", "#F59E0B"]
   @max_income 300.0
+  @player_radius 0.4
 
   defstruct [
     :user_id,
@@ -96,13 +97,18 @@ defmodule Backend.Matches.PlayerState do
   end
 
   @doc """
-  Clamps player position within grid bounds.
+  Clamps player position within grid bounds, accounting for player radius.
   """
   def clamp_position(player, grid_size) do
-    new_x = max(0.0, min(player.x, grid_size - 1.0))
-    new_y = max(0.0, min(player.y, grid_size - 1.0))
+    new_x = max(@player_radius, min(player.x, grid_size - 1.0 - @player_radius))
+    new_y = max(@player_radius, min(player.y, grid_size - 1.0 - @player_radius))
     %{player | x: new_x, y: new_y}
   end
+
+  @doc """
+  Returns the player collision radius.
+  """
+  def player_radius, do: @player_radius
 
   @doc """
   Checks if player can move to a tile (not wall/hole).
@@ -177,6 +183,7 @@ defmodule Backend.Matches.PlayerState do
     base_cost = 20
     base_cost + player.energy_stacks * 10
   end
+
   def powerup_cost(:multishot, _player), do: 40
   def powerup_cost(:piercing, _player), do: 35
   def powerup_cost(:beam_speed, _player), do: 30

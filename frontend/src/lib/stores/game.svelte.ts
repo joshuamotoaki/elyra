@@ -15,6 +15,9 @@ import type {
 } from '$lib/api/types/game';
 import { parseCoord } from '$lib/api/types/game';
 
+// Collision constants - must match backend
+const PLAYER_RADIUS = 0.4;
+
 // Snapshot for interpolation
 interface PlayerSnapshot {
 	x: number;
@@ -268,7 +271,66 @@ class GameStore {
 	}
 
 	/**
+	 * Check if a circle at (cx, cy) with given radius intersects a tile at (tileX, tileY)
+	 * Tiles are CENTERED at their integer coordinates (Three.js BoxGeometry is centered)
+	 */
+	private circleIntersectsTile(
+		cx: number,
+		cy: number,
+		radius: number,
+		tileX: number,
+		tileY: number
+	): boolean {
+		// Tile spans from tileX - 0.5 to tileX + 0.5 (centered on integer coordinate)
+		const tileMinX = tileX - 0.5;
+		const tileMaxX = tileX + 0.5;
+		const tileMinY = tileY - 0.5;
+		const tileMaxY = tileY + 0.5;
+
+		// Find closest point on tile to circle center
+		const closestX = Math.max(tileMinX, Math.min(cx, tileMaxX));
+		const closestY = Math.max(tileMinY, Math.min(cy, tileMaxY));
+
+		// Check distance from circle center to closest point
+		const distX = cx - closestX;
+		const distY = cy - closestY;
+		const distanceSq = distX * distX + distY * distY;
+
+		return distanceSq <= radius * radius;
+	}
+
+	/**
+	 * Check if a position is blocked by walls/obstacles
+	 */
+	private isPositionBlocked(x: number, y: number): boolean {
+		// Get bounding box of tiles the player could touch
+		const minTileX = Math.floor(x - PLAYER_RADIUS);
+		const maxTileX = Math.floor(x + PLAYER_RADIUS);
+		const minTileY = Math.floor(y - PLAYER_RADIUS);
+		const maxTileY = Math.floor(y + PLAYER_RADIUS);
+
+		for (let tx = minTileX; tx <= maxTileX; tx++) {
+			for (let ty = minTileY; ty <= maxTileY; ty++) {
+				const tileType = this.mapTiles.get(`${tx},${ty}`);
+
+				const isBlocking =
+					!tileType ||
+					tileType === 'wall' ||
+					tileType === 'mirror_ne' ||
+					tileType === 'mirror_nw' ||
+					tileType === 'hole';
+
+				if (isBlocking && this.circleIntersectsTile(x, y, PLAYER_RADIUS, tx, ty)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Update local visual position based on input (immediate feedback)
+	 * Uses predictive collision to prevent walking through walls
 	 */
 	updateLocalVisualPosition(dt: number) {
 		const player = this.localPlayer;
@@ -291,13 +353,34 @@ class GameStore {
 			dy /= mag;
 		}
 
-		const speed = player.glow_radius > 1.5 ? 5 * 1.15 : 5; // Approximate speed with upgrades
-		this.localVisualX += dx * speed * dt;
-		this.localVisualY += dy * speed * dt;
+		// Calculate speed with upgrades
+		const speedMultiplier = 1 + (player.speed_stacks ?? 0) * 0.15;
+		const speed = 5 * speedMultiplier;
 
-		// Clamp to grid
-		this.localVisualX = Math.max(0, Math.min(this.localVisualX, this.gridSize - 1));
-		this.localVisualY = Math.max(0, Math.min(this.localVisualY, this.gridSize - 1));
+		const moveX = dx * speed * dt;
+		const moveY = dy * speed * dt;
+
+		// Predictive collision - try X movement
+		const proposedX = this.localVisualX + moveX;
+		if (!this.isPositionBlocked(proposedX, this.localVisualY)) {
+			this.localVisualX = proposedX;
+		}
+
+		// Predictive collision - try Y movement (using new X position)
+		const proposedY = this.localVisualY + moveY;
+		if (!this.isPositionBlocked(this.localVisualX, proposedY)) {
+			this.localVisualY = proposedY;
+		}
+
+		// Clamp to grid bounds (accounting for player radius)
+		this.localVisualX = Math.max(
+			PLAYER_RADIUS,
+			Math.min(this.localVisualX, this.gridSize - 1 - PLAYER_RADIUS)
+		);
+		this.localVisualY = Math.max(
+			PLAYER_RADIUS,
+			Math.min(this.localVisualY, this.gridSize - 1 - PLAYER_RADIUS)
+		);
 	}
 
 	/**

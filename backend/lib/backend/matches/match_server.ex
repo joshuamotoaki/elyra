@@ -394,8 +394,7 @@ defmodule Backend.Matches.MatchServer do
       |> Enum.map(fn {user_id, player} ->
         updated =
           player
-          |> PlayerState.update_position(dt)
-          |> apply_collision(state.map_tiles, state.grid_size)
+          |> apply_movement_with_collision(dt, state.map_tiles)
           |> PlayerState.clamp_position(state.grid_size)
           |> PlayerState.regenerate_energy(dt)
 
@@ -406,33 +405,96 @@ defmodule Backend.Matches.MatchServer do
     %{state | players: new_players}
   end
 
-  defp apply_collision(player, map_tiles, _grid_size) do
-    tile_x = trunc(player.x)
-    tile_y = trunc(player.y)
-    tile_type = Map.get(map_tiles, {tile_x, tile_y}, :walkable)
+  defp apply_movement_with_collision(player, dt, map_tiles) do
+    radius = PlayerState.player_radius()
+    effective_speed = player.base_speed * player.speed_multiplier
 
-    case tile_type do
-      t when t in [:walkable, :generator] ->
-        player
+    # Calculate velocity based on input
+    dx = input_to_direction(player.input.d, player.input.a)
+    dy = input_to_direction(player.input.s, player.input.w)
+    {dx, dy} = normalize_direction(dx, dy)
 
-      :wall ->
-        # Push back to previous valid position (simple collision)
-        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+    velocity_x = dx * effective_speed
+    velocity_y = dy * effective_speed
 
-      :hole ->
-        # Reset to spawn (or handle death)
-        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+    # Try X movement first
+    proposed_x = player.x + velocity_x * dt
 
-      :mirror_ne ->
-        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+    new_x =
+      if can_occupy?(proposed_x, player.y, map_tiles, radius) do
+        proposed_x
+      else
+        player.x
+      end
 
-      :mirror_nw ->
-        %{player | x: player.x - player.velocity_x * 0.02, y: player.y - player.velocity_y * 0.02}
+    # Try Y movement second (using new_x position)
+    proposed_y = player.y + velocity_y * dt
 
-      _ ->
-        player
+    new_y =
+      if can_occupy?(new_x, proposed_y, map_tiles, radius) do
+        proposed_y
+      else
+        player.y
+      end
+
+    %{player | x: new_x, y: new_y, velocity_x: velocity_x, velocity_y: velocity_y}
+  end
+
+  # Check if a circular player can occupy a position without overlapping blocking tiles
+  defp can_occupy?(x, y, map_tiles, radius) do
+    # Get bounding box of tiles the player could touch
+    # Use floor() not trunc() for symmetric collision from all directions
+    min_tile_x = floor(x - radius)
+    max_tile_x = floor(x + radius)
+    min_tile_y = floor(y - radius)
+    max_tile_y = floor(y + radius)
+
+    # Check each tile in the bounding box
+    not Enum.any?(min_tile_x..max_tile_x, fn tx ->
+      Enum.any?(min_tile_y..max_tile_y, fn ty ->
+        tile_type = Map.get(map_tiles, {tx, ty}, :wall)
+
+        is_blocking = tile_type in [:wall, :mirror_ne, :mirror_nw, :hole]
+        is_blocking and circle_intersects_tile?(x, y, radius, tx, ty)
+      end)
+    end)
+  end
+
+  # Check if a circle at (cx, cy) with given radius intersects a tile at (tile_x, tile_y)
+  # Tiles are CENTERED at their integer coordinates (Three.js BoxGeometry is centered)
+  defp circle_intersects_tile?(cx, cy, radius, tile_x, tile_y) do
+    # Tile spans from tile_x - 0.5 to tile_x + 0.5 (centered on integer coordinate)
+    tile_min_x = tile_x - 0.5
+    tile_max_x = tile_x + 0.5
+    tile_min_y = tile_y - 0.5
+    tile_max_y = tile_y + 0.5
+
+    # Find closest point on tile to circle center
+    closest_x = max(tile_min_x, min(cx, tile_max_x))
+    closest_y = max(tile_min_y, min(cy, tile_max_y))
+
+    # Check distance from circle center to closest point
+    dist_x = cx - closest_x
+    dist_y = cy - closest_y
+    distance_sq = dist_x * dist_x + dist_y * dist_y
+
+    distance_sq <= radius * radius
+  end
+
+  defp input_to_direction(positive, negative) do
+    cond do
+      positive and not negative -> 1.0
+      negative and not positive -> -1.0
+      true -> 0.0
     end
   end
+
+  defp normalize_direction(dx, dy) when dx != 0.0 and dy != 0.0 do
+    magnitude = :math.sqrt(dx * dx + dy * dy)
+    {dx / magnitude, dy / magnitude}
+  end
+
+  defp normalize_direction(dx, dy), do: {dx, dy}
 
   defp update_glow_capture(state) do
     # Each player captures tiles within their glow radius
