@@ -5,7 +5,7 @@
 	import { Header, PageBackground } from '$lib/components/layout';
 	import { Avatar, Button, Card, Input, Toggle } from '$lib/components/ui';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ArrowsClockwise, GameController, SpinnerGap } from 'phosphor-svelte';
+	import { ArrowsClockwise, GameController, SpinnerGap, Warning } from 'phosphor-svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	const AUTO_REFRESH_INTERVAL = 10000; // 10 seconds
@@ -125,6 +125,19 @@
 			<div class="mb-8">
 				<h2 class="text-2xl font-semibold text-slate-800">Game Lobby</h2>
 				<p class="text-slate-600">Create or join a match to play</p>
+			</div>
+
+			<!-- Visual Effects Warning -->
+			<div
+				class="mb-6 flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
+			>
+				<Warning class="text-warning mt-0.5 shrink-0" size={20} weight="fill" />
+				<p class="text-sm text-slate-700">
+					<span class="font-medium">Visual Effects Notice:</span> This game contains bright colors and
+					moving laser effects. Player discretion is advised for those with visual sensitivities. While
+					gameplay is abstract and non-violent, it includes shooting mechanics and competitive territory
+					capture that may not be suitable for all ages.
+				</p>
 			</div>
 
 			<!-- Error Display -->
