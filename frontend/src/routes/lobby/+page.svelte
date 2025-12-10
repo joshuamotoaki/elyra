@@ -3,9 +3,16 @@
 	import { elyraClient } from '$lib/api';
 	import type { Match } from '$lib/api/types/match';
 	import { Header, PageBackground } from '$lib/components/layout';
-	import { Avatar, Button, Card, Input, Toggle } from '$lib/components/ui';
+	import { Avatar, Button, Card, Input, Modal, Toggle } from '$lib/components/ui';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ArrowsClockwise, GameController, SpinnerGap, Warning, X } from 'phosphor-svelte';
+	import {
+		ArrowsClockwise,
+		GameController,
+		Question,
+		SpinnerGap,
+		Warning,
+		X
+	} from 'phosphor-svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	const AUTO_REFRESH_INTERVAL = 10000; // 10 seconds
@@ -20,6 +27,7 @@
 	let error = $state<string | null>(null);
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 	let showWarning = $state(true);
+	let showHowToPlay = $state(false);
 
 	const WARNING_DISMISSED_KEY = 'elyra-warning-dismissed';
 
@@ -135,9 +143,15 @@
 		<!-- Main Content -->
 		<div class="max-w-4xl mx-auto px-6 pb-12">
 			<!-- Page Title -->
-			<div class="mb-8">
-				<h2 class="text-2xl font-semibold text-slate-800">Game Lobby</h2>
-				<p class="text-slate-600">Create or join a match to play</p>
+			<div class="mb-8 flex items-start justify-between">
+				<div>
+					<h2 class="text-2xl font-semibold text-slate-800">Game Lobby</h2>
+					<p class="text-slate-600">Create or join a match to play</p>
+				</div>
+				<Button onclick={() => (showHowToPlay = true)} variant="ghost" size="sm">
+					<Question size={18} />
+					How to Play
+				</Button>
 			</div>
 
 			<!-- Visual Effects Warning -->
@@ -316,3 +330,21 @@
 		</div>
 	</div>
 </PageBackground>
+
+<!-- How to Play Modal -->
+<Modal bind:open={showHowToPlay} onClose={() => (showHowToPlay = false)} title="How to Play">
+	<div class="space-y-4">
+		<p>
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+			labore et dolore magna aliqua.
+		</p>
+		<p>
+			Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+			commodo consequat.
+		</p>
+		<p>
+			Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+			pariatur.
+		</p>
+	</div>
+</Modal>
