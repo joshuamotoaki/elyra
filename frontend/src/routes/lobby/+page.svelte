@@ -5,7 +5,7 @@
 	import { Header, PageBackground } from '$lib/components/layout';
 	import { Avatar, Button, Card, Input, Toggle } from '$lib/components/ui';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ArrowsClockwise, GameController, SpinnerGap, Warning } from 'phosphor-svelte';
+	import { ArrowsClockwise, GameController, SpinnerGap, Warning, X } from 'phosphor-svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	const AUTO_REFRESH_INTERVAL = 10000; // 10 seconds
@@ -19,6 +19,14 @@
 	let isPublic = $state(true);
 	let error = $state<string | null>(null);
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
+	let showWarning = $state(true);
+
+	const WARNING_DISMISSED_KEY = 'elyra-warning-dismissed';
+
+	function dismissWarning() {
+		showWarning = false;
+		localStorage.setItem(WARNING_DISMISSED_KEY, 'true');
+	}
 
 	function handleLogout() {
 		auth.logout();
@@ -26,6 +34,11 @@
 	}
 
 	onMount(async () => {
+		// Check if warning was previously dismissed
+		if (localStorage.getItem(WARNING_DISMISSED_KEY) === 'true') {
+			showWarning = false;
+		}
+
 		// Check auth
 		if (!auth.token) {
 			goto('/');
@@ -128,17 +141,26 @@
 			</div>
 
 			<!-- Visual Effects Warning -->
-			<div
-				class="mb-6 flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
-			>
-				<Warning class="text-warning mt-0.5 shrink-0" size={20} weight="fill" />
-				<p class="text-sm text-slate-700">
-					<span class="font-medium">Visual Effects Notice:</span> This game contains bright colors and
-					moving laser effects. Player discretion is advised for those with visual sensitivities. While
-					gameplay is abstract and non-violent, it includes shooting mechanics and competitive territory
-					capture that may not be suitable for all ages.
-				</p>
-			</div>
+			{#if showWarning}
+				<div
+					class="mb-6 flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3"
+				>
+					<Warning class="text-warning mt-0.5 shrink-0" size={20} weight="fill" />
+					<p class="flex-1 text-sm text-slate-700">
+						<span class="font-medium">Visual Effects Notice:</span> This game contains bright colors and
+						moving laser effects. Player discretion is advised for those with visual sensitivities. While
+						gameplay is abstract and non-violent, it includes shooting mechanics and competitive territory
+						capture that may not be suitable for all ages.
+					</p>
+					<button
+						onclick={dismissWarning}
+						class="shrink-0 p-1 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-warning/20 transition-colors"
+						aria-label="Dismiss warning"
+					>
+						<X size={18} />
+					</button>
+				</div>
+			{/if}
 
 			<!-- Error Display -->
 			{#if error}
