@@ -61,7 +61,9 @@
 	{...rest}
 >
 	{#if loading}
-		<SpinnerGap class="animate-spin" size={16} />
+		<span class="animate-spin inline-flex">
+			<SpinnerGap size={16} />
+		</span>
 	{/if}
 	{@render children()}
 </button>

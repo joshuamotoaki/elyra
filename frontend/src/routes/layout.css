@@ -61,6 +61,19 @@
 	--transition-slow: 300ms ease;
 }
 
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.animate-spin {
+	animation: spin 1s linear infinite;
+}
+
 /* Sky gradient backgrounds */
 .bg-sky-gradient {
 	background: linear-gradient(135deg, #4ecdc4 0%, #7c9fe8 50%, #a78bfa 100%);
