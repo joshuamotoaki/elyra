@@ -37,9 +37,9 @@ Earn coins from:
 Spend coins on power-ups:
 | Power-up | Stackability | Cost | Effect |
 |----------|-----------|------|--------|
-| Speed | Stackable | 15 | +15% movement speed |
-| Radius | Stackable | Yes | 20 | +0.25 glow radius |
-| Energy | Stackable | 20 | +25 max energy, faster regen |
+| Speed | Stackable | 15 + 20 * stack | +15% movement speed |
+| Radius | Stackable | 20 + 20 * stack | +0.25 glow radius |
+| Energy | Stackable | 20 + 20 * stack | +25 max energy, faster regen |
 | Multishot | One-time purchase | 40 | Fire 3 beams in spread pattern |
 | Piercing | One-time purchase | 35 | Beams pass through 1 wall |
 | Beam Speed | One-time purchase | 30 | Double beam velocity |
