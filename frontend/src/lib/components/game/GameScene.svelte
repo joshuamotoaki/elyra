@@ -10,8 +10,8 @@
 
 	// Camera is centered on the map
 	const mapCenter = 10; // Center of 20x20 grid
-	const cameraHeight = 40;
-	const cameraDistance = 28;
+	const cameraHeight = 32;
+	const cameraDistance = 18;
 
 	// Get threlte context for raycasting
 	const { camera, renderer } = useThrelte();
