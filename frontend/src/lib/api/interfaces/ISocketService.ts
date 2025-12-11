@@ -192,9 +192,9 @@ export interface ISocketService {
 	 * - speed: 15 coins (stackable, +15% speed)
 	 * - radius: 20 coins (stackable, +20% glow radius)
 	 * - energy: 20 coins (stackable, +20 max energy)
-	 * - multishot: 40 coins (one-time, fires 3 beams)
-	 * - piercing: 35 coins (one-time, beams pass through walls once)
-	 * - beam_speed: 30 coins (one-time, 2x beam speed)
+	 * - multishot: 75 coins (one-time, fires 3 beams)
+	 * - piercing: 50 coins (one-time, beams pass through walls once)
+	 * - beam_speed: 40 coins (one-time, 2x beam speed)
 	 *
 	 * @example
 	 * ```typescript

@@ -40,9 +40,9 @@ Spend coins on power-ups:
 | Speed | Stackable | 15 + 20 * stack | +15% movement speed |
 | Radius | Stackable | 20 + 20 * stack | +0.25 glow radius |
 | Energy | Stackable | 20 + 20 * stack | +25 max energy, faster regen |
-| Multishot | One-time purchase | 40 | Fire 3 beams in spread pattern |
-| Piercing | One-time purchase | 35 | Beams pass through 1 wall |
-| Beam Speed | One-time purchase | 30 | Double beam velocity |
+| Multishot | One-time purchase | 75 | Fire 3 beams in spread pattern |
+| Piercing | One-time purchase | 50 | Beams pass through 1 wall |
+| Beam Speed | One-time purchase | 40 | Double beam velocity |
 
 ### Map Features
 - **Walls** - Block movement and beams
