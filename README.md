@@ -33,23 +33,21 @@ Capture the highest percentage of territory before time runs out (2 minutes).
 Earn coins from:
 - Passive income (1 coin/sec)
 - Owning generators (3 coins/sec each)
-- Collecting coin drops
 
 Spend coins on power-ups:
-| Power-up | Cost | Effect |
-|----------|------|--------|
-| Speed | 15 | +15% movement speed |
-| Radius | 20 | +0.25 glow radius |
-| Energy | 20 | +25 max energy, faster regen |
-| Multishot | 40 | Fire 3 beams in spread pattern |
-| Piercing | 35 | Beams pass through 1 wall |
-| Beam Speed | 30 | Double beam velocity |
+| Power-up | Stackability | Cost | Effect |
+|----------|-----------|------|--------|
+| Speed | Stackable | 15 | +15% movement speed |
+| Radius | Stackable | Yes | 20 | +0.25 glow radius |
+| Energy | Stackable | 20 | +25 max energy, faster regen |
+| Multishot | One-time purchase | 40 | Fire 3 beams in spread pattern |
+| Piercing | One-time purchase | 35 | Beams pass through 1 wall |
+| Beam Speed | One-time purchase | 30 | Double beam velocity |
 
 ### Map Features
 - **Walls** - Block movement and beams
 - **Mirrors** - Reflect beams at 90 degrees
 - **Generators** - Provide bonus income when owned
-- **Holes** - Destroy beams on contact
 
 ### Game Modes
 - **Multiplayer** (2-4 players): Compete for territory in 2-minute matches
