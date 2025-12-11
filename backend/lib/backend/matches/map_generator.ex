@@ -6,8 +6,8 @@ defmodule Backend.Matches.MapGenerator do
   @grid_size 20
   @generator_count_range 6..9
   @generator_min_distance 8
-  @wall_cluster_count_range 40..60
-  @wall_cluster_size_range 3..6
+  @wall_cluster_count_range 38..55
+  @wall_cluster_size_range 3..5
   @hole_count_range 10..18
   @mirror_conversion_rate 0.3
   @spawn_clear_radius 3
