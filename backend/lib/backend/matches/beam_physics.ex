@@ -47,7 +47,7 @@ defmodule Backend.Matches.BeamPhysics do
     check_tile = {trunc(check_x), trunc(check_y)}
     tile_type = Map.get(map_tiles, check_tile, :boundary)
 
-    if tile_type in [:wall, :hole, :boundary] do
+    if tile_type in [:wall, :boundary] do
       # Would immediately hit a wall - don't create beam
       nil
     else
@@ -191,7 +191,7 @@ defmodule Backend.Matches.BeamPhysics do
             exit_tile = {trunc(exit_x), trunc(exit_y)}
             exit_tile_type = Map.get(map_tiles, exit_tile, :boundary)
 
-            if exit_tile_type in [:wall, :mirror, :hole, :boundary] do
+            if exit_tile_type in [:wall, :mirror, :boundary] do
               # Would bounce into another obstacle - terminate beam
               {%{beam | x: entry_x, y: entry_y, active: false}, captured_tiles, true}
             else
@@ -207,10 +207,6 @@ defmodule Backend.Matches.BeamPhysics do
 
               {updated_beam, captured_tiles, false}
             end
-
-          {:hole, _, _} ->
-            # Beam falls into hole
-            {%{beam | active: false}, captured_tiles, true}
 
           {:boundary, _, _} ->
             # Hit map boundary
@@ -288,14 +284,15 @@ defmodule Backend.Matches.BeamPhysics do
             :generator ->
               {:cont, {[tile | captured_acc], nil}}
 
+            :hole ->
+              # Beams pass through holes (but don't capture them)
+              {:cont, {captured_acc, nil}}
+
             :wall ->
               {:halt, {captured_acc, {:wall, tx, ty}}}
 
             :mirror ->
               {:halt, {captured_acc, {:mirror, tx, ty}}}
-
-            :hole ->
-              {:halt, {captured_acc, {:hole, tx, ty}}}
 
             :boundary ->
               {:halt, {captured_acc, {:boundary, tx, ty}}}

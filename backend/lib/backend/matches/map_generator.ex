@@ -35,9 +35,6 @@ defmodule Backend.Matches.MapGenerator do
     # Place wall clusters
     tiles = place_wall_clusters(tiles, generators)
 
-    # Place holes
-    tiles = place_holes(tiles, generators)
-
     # Convert some walls to mirrors
     tiles = convert_walls_to_mirrors(tiles)
 
@@ -46,6 +43,9 @@ defmodule Backend.Matches.MapGenerator do
 
     # Clear areas around spawns
     tiles = clear_spawn_areas(tiles, spawn_points)
+
+    # Place holes AFTER clearing spawn areas so they don't get wiped
+    tiles = place_holes(tiles, generators)
 
     # Validate connectivity (ensure all spawns can reach each other)
     if connected?(tiles, spawn_points) do
