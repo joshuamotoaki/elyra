@@ -3,7 +3,7 @@ defmodule Backend.Matches.PlayerState do
   Represents the state of a player in an active match.
   """
 
-  @player_colors ["#EF4444", "#3B82F6", "#22C55E", "#F59E0B"]
+  @player_colors ["#3B82F6", "#EF4444", "#22C55E", "#F59E0B"]
   @max_income 300.0
   @player_radius 0.4
 

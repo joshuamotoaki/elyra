@@ -204,5 +204,5 @@ redis://localhost:6380
 ### Match Players
 - `match_id` - Associated match
 - `user_id` - Player
-- `color` - Assigned color (#EF4444, #3B82F6, #22C55E, #F59E0B)
+- `color` - Assigned color (#3B82F6, #EF4444, #22C55E, #F59E0B)
 - `score` - Final territory percentage

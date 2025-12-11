@@ -10,7 +10,7 @@ defmodule Backend.Matches do
   alias Backend.Accounts.User
 
   # Player colors for assignment
-  @colors ["#EF4444", "#3B82F6", "#22C55E", "#F59E0B"]
+  @colors ["#3B82F6", "#EF4444", "#22C55E", "#F59E0B"]
 
   @doc """
   Generate a unique 6-character join code.

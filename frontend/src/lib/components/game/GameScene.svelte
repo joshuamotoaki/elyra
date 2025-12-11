@@ -134,12 +134,6 @@
 	shadow.mapSize.height={1024}
 />
 
-<!-- Background -->
-<!-- <T.Mesh position={[50, -1, 50]} rotation.x={-Math.PI / 2}>
-	<T.PlaneGeometry args={[200, 200]} />
-	<T.MeshStandardMaterial color="#64badb" />
-</T.Mesh> -->
-
 <!-- Tile Grid -->
 <TileGrid />
 
