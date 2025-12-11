@@ -420,27 +420,34 @@ defmodule Backend.Matches.MatchServer do
     velocity_x = dx * effective_speed
     velocity_y = dy * effective_speed
 
-    # Try X movement first
-    proposed_x = player.x + velocity_x * dt
+    move_x = velocity_x * dt
+    move_y = velocity_y * dt
 
-    new_x =
-      if can_occupy?(proposed_x, player.y, map_tiles, radius) do
-        proposed_x
-      else
-        player.x
-      end
+    # Try X movement - use partial moves if full move blocked
+    new_x = find_valid_move(player.x, move_x, player.y, map_tiles, radius, :x)
 
-    # Try Y movement second (using new_x position)
-    proposed_y = player.y + velocity_y * dt
-
-    new_y =
-      if can_occupy?(new_x, proposed_y, map_tiles, radius) do
-        proposed_y
-      else
-        player.y
-      end
+    # Try Y movement (using new_x position) - use partial moves if full move blocked
+    new_y = find_valid_move(player.y, move_y, new_x, map_tiles, radius, :y)
 
     %{player | x: new_x, y: new_y, velocity_x: velocity_x, velocity_y: velocity_y}
+  end
+
+  # Try full move, then progressively smaller moves to slide along walls
+  defp find_valid_move(current, delta, other_coord, map_tiles, radius, axis) do
+    # Very fine granularity for ultra-smooth wall sliding
+    fractions = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05]
+
+    Enum.find_value(fractions, current, fn fraction ->
+      proposed = current + delta * fraction
+
+      can_move? =
+        case axis do
+          :x -> can_occupy?(proposed, other_coord, map_tiles, radius)
+          :y -> can_occupy?(other_coord, proposed, map_tiles, radius)
+        end
+
+      if can_move?, do: proposed, else: nil
+    end)
   end
 
   # Check if a circular player can occupy a position without overlapping blocking tiles
@@ -480,7 +487,9 @@ defmodule Backend.Matches.MatchServer do
     dist_y = cy - closest_y
     distance_sq = dist_x * dist_x + dist_y * dist_y
 
-    distance_sq <= radius * radius
+    # Tolerance to prevent getting stuck on wall edges and corners when sliding
+    collision_radius = radius - 0.1
+    distance_sq < collision_radius * collision_radius
   end
 
   defp input_to_direction(positive, negative) do
