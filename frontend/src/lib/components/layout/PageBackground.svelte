@@ -9,7 +9,7 @@
 	let { variant = 'animated', children }: Props = $props();
 </script>
 
-<div class="relative min-h-screen overflow-x-hidden overflow-y-auto bg-slate-100">
+<div class="relative min-h-screen overflow-x-hidden overflow-hidden bg-slate-100">
 	<!-- Base soft gradient -->
 	<div class="absolute inset-0 bg-linear-to-br from-teal-100 via-indigo-100 to-purple-100"></div>
 
