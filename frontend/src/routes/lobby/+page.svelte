@@ -168,7 +168,7 @@
 					</p>
 					<button
 						onclick={dismissWarning}
-						class="shrink-0 p-1 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-warning/20 transition-colors"
+						class="shrink-0 p-1 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-warning/20 transition-colors cursor-pointer"
 						aria-label="Dismiss warning"
 					>
 						<X size={18} />
