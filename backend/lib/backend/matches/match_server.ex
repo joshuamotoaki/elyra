@@ -446,11 +446,10 @@ defmodule Backend.Matches.MatchServer do
   # Check if a circular player can occupy a position without overlapping blocking tiles
   defp can_occupy?(x, y, map_tiles, radius) do
     # Get bounding box of tiles the player could touch
-    # Expand by 1 to account for centered tile coordinates (tiles span n-0.5 to n+0.5)
-    min_tile_x = floor(x - radius) - 1
-    max_tile_x = floor(x + radius) + 1
-    min_tile_y = floor(y - radius) - 1
-    max_tile_y = floor(y + radius) + 1
+    min_tile_x = floor(x - radius)
+    max_tile_x = floor(x + radius)
+    min_tile_y = floor(y - radius)
+    max_tile_y = floor(y + radius)
 
     # Check each tile in the bounding box
     not Enum.any?(min_tile_x..max_tile_x, fn tx ->
@@ -464,13 +463,13 @@ defmodule Backend.Matches.MatchServer do
   end
 
   # Check if a circle at (cx, cy) with given radius intersects a tile at (tile_x, tile_y)
-  # Tiles are CENTERED at their integer coordinates (Three.js BoxGeometry is centered)
+  # Tiles span from tile_x to tile_x+1 (matches beam physics coordinate system)
   defp circle_intersects_tile?(cx, cy, radius, tile_x, tile_y) do
-    # Tile spans from tile_x - 0.5 to tile_x + 0.5 (centered on integer coordinate)
-    tile_min_x = tile_x - 0.5
-    tile_max_x = tile_x + 0.5
-    tile_min_y = tile_y - 0.5
-    tile_max_y = tile_y + 0.5
+    # Tile spans from tile_x to tile_x + 1
+    tile_min_x = tile_x
+    tile_max_x = tile_x + 1
+    tile_min_y = tile_y
+    tile_max_y = tile_y + 1
 
     # Find closest point on tile to circle center
     closest_x = max(tile_min_x, min(cx, tile_max_x))

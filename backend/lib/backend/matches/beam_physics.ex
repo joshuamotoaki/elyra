@@ -21,6 +21,7 @@ defmodule Backend.Matches.BeamPhysics do
     speed: @base_speed,
     time_alive: 0.0,
     piercing_used: false,
+    pierced_tile: nil,
     active: true
   ]
 
@@ -128,16 +129,41 @@ defmodule Backend.Matches.BeamPhysics do
             {stop_x, stop_y} = calculate_stop_position(beam, wall_x, wall_y)
 
             if has_piercing and not beam.piercing_used do
-              # Pierce through
-              updated_beam = %{
-                beam
-                | x: new_x,
-                  y: new_y,
-                  time_alive: new_time_alive,
-                  piercing_used: true
-              }
+              # Pierce through this wall, but check for more walls after it
+              beam_after_pierce = %{beam | piercing_used: true, pierced_tile: {wall_x, wall_y}}
 
-              {updated_beam, captured_tiles, false}
+              # Check remaining path for more walls
+              {_more_captured, more_collision} =
+                trace_path(beam_after_pierce, new_x, new_y, map_tiles)
+
+              case more_collision do
+                {:wall, wall2_x, wall2_y} ->
+                  # Hit another wall - stop there
+                  {stop2_x, stop2_y} = calculate_stop_position(beam, wall2_x, wall2_y)
+
+                  {%{
+                     beam_after_pierce
+                     | x: stop2_x,
+                       y: stop2_y,
+                       active: false,
+                       time_alive: new_time_alive
+                   }, captured_tiles, true}
+
+                nil ->
+                  # No more walls - continue to full position
+                  {%{beam_after_pierce | x: new_x, y: new_y, time_alive: new_time_alive},
+                   captured_tiles, false}
+
+                _other ->
+                  # Hit mirror/hole/boundary after piercing - stop at that obstacle
+                  {%{
+                     beam_after_pierce
+                     | x: stop_x,
+                       y: stop_y,
+                       active: false,
+                       time_alive: new_time_alive
+                   }, captured_tiles, true}
+              end
             else
               # Stop at wall edge
               {%{beam | x: stop_x, y: stop_y, active: false}, captured_tiles, true}
@@ -245,32 +271,38 @@ defmodule Backend.Matches.BeamPhysics do
     tiles_along_path = raycast_tiles(beam.x, beam.y, end_x, end_y)
 
     # Find first collision and collect capturable tiles
+    # Skip the specific pierced tile if we've already pierced through it
     {capturable, collision} =
       tiles_along_path
       |> Enum.reduce_while({[], nil}, fn {tx, ty} = tile, {captured_acc, _} ->
-        tile_type = Map.get(map_tiles, tile, :boundary)
+        # Skip the tile we already pierced through
+        if tile == beam.pierced_tile do
+          {:cont, {captured_acc, nil}}
+        else
+          tile_type = Map.get(map_tiles, tile, :boundary)
 
-        case tile_type do
-          :walkable ->
-            {:cont, {[tile | captured_acc], nil}}
+          case tile_type do
+            :walkable ->
+              {:cont, {[tile | captured_acc], nil}}
 
-          :generator ->
-            {:cont, {[tile | captured_acc], nil}}
+            :generator ->
+              {:cont, {[tile | captured_acc], nil}}
 
-          :wall ->
-            {:halt, {captured_acc, {:wall, tx, ty}}}
+            :wall ->
+              {:halt, {captured_acc, {:wall, tx, ty}}}
 
-          :mirror ->
-            {:halt, {captured_acc, {:mirror, tx, ty}}}
+            :mirror ->
+              {:halt, {captured_acc, {:mirror, tx, ty}}}
 
-          :hole ->
-            {:halt, {captured_acc, {:hole, tx, ty}}}
+            :hole ->
+              {:halt, {captured_acc, {:hole, tx, ty}}}
 
-          :boundary ->
-            {:halt, {captured_acc, {:boundary, tx, ty}}}
+            :boundary ->
+              {:halt, {captured_acc, {:boundary, tx, ty}}}
 
-          _ ->
-            {:halt, {captured_acc, {:boundary, tx, ty}}}
+            _ ->
+              {:halt, {captured_acc, {:boundary, tx, ty}}}
+          end
         end
       end)
 

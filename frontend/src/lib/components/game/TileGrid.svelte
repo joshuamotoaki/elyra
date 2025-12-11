@@ -124,7 +124,7 @@
 {#each walkableTiles as tile (tile.key)}
 	{@const color = getTileColor(tile.key, tile.type)}
 
-	<T.Group position={[tile.x, 0, tile.y]}>
+	<T.Group position={[tile.x + 0.5, 0, tile.y + 0.5]}>
 		<T.Mesh position={[0, -0.04, 0]} geometry={groutGeo} material={groutMaterial} />
 
 		<T.Mesh position={[0, 0, 0]} geometry={tileGeo}>
@@ -137,7 +137,7 @@
 {#each wallTiles as tile (tile.key)}
 	{@const isMirror = tile.type !== 'wall'}
 
-	<T.Group position={[tile.x, 0, tile.y]}>
+	<T.Group position={[tile.x + 0.5, 0, tile.y + 0.5]}>
 		<T.Mesh position={[0, -0.04, 0]} geometry={groutGeo} material={groutMaterial} />
 
 		<T.Mesh position={[0, 0.25, 0]} geometry={wallGeo}>
@@ -161,7 +161,7 @@
 	{@const owner = gameStore.tileOwners.get(genKey)}
 	{@const baseColor = owner ? gameStore.getPlayerColor(owner) : GENERATOR_COLOR}
 	{@const ownerColor = owner ? darken(baseColor, 0.35) : baseColor}
-	<T.Mesh position={[gen.x, 0.07, gen.y]}>
+	<T.Mesh position={[gen.x + 0.5, 0.07, gen.y + 0.5]}>
 		<T.CylinderGeometry args={[0.45, 0.45, 0.45, 6]} />
 		<T.MeshStandardMaterial color={ownerColor} emissive={ownerColor} emissiveIntensity={0.5} />
 	</T.Mesh>
