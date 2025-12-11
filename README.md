@@ -19,41 +19,41 @@ A real-time multiplayer territory control game with 3D graphics. Players compete
 ### Objective
 Capture the highest percentage of territory before time runs out (2 minutes).
 
+### Game Modes
+- **Multiplayer (2-4 players)** - Compete for territory in 2-minute matches
+- **Solo Practice** - No time limit, practice mechanics freely
+
 ### Controls
-- **WASD** - Move your character
+- **WASD or arrow keys** - Move your character
 - **Mouse** - Aim direction
-- **Click** - Fire a beam
+- **Click and drag** - Rotate game board
+- **Space Bar** - Fire a beam
 
 ### Territory Capture
-- **Glow Radius**: Your character passively captures tiles within a glowing radius
-- **Beams**: Fire energy beams that capture all tiles along their path
-- **Generators**: Control generator tiles for bonus income
+- **Glow Radius** - Your character passively captures tiles within a glowing radius
+- **Beams** - Fire energy beams that capture all tiles along their path
+- **Generators** - Control generator tiles for bonus income
+
+### Map Features
+- **Tiles** - Walkable and colored same color as player who captured it
+- **Walls** - Block movement and beams
+- **Mirrors** - Reflect beams at 90 degrees
+- **Generators** - Provide bonus income when owned
 
 ### Economy & Power-ups
 Earn coins from:
 - Passive income (1 coin/sec)
 - Owning generators (3 coins/sec each)
-- Collecting coin drops
 
 Spend coins on power-ups:
-| Power-up | Cost | Effect |
-|----------|------|--------|
-| Speed | 15 | +15% movement speed |
-| Radius | 20 | +0.25 glow radius |
-| Energy | 20 | +25 max energy, faster regen |
-| Multishot | 40 | Fire 3 beams in spread pattern |
-| Piercing | 35 | Beams pass through 1 wall |
-| Beam Speed | 30 | Double beam velocity |
-
-### Map Features
-- **Walls** - Block movement and beams
-- **Mirrors** - Reflect beams at 90 degrees
-- **Generators** - Provide bonus income when owned
-- **Holes** - Destroy beams on contact
-
-### Game Modes
-- **Multiplayer** (2-4 players): Compete for territory in 2-minute matches
-- **Solo Practice**: No time limit, practice mechanics freely
+| Power-up | Stackability | Cost | Effect |
+|----------|-----------|------|--------|
+| Speed | Stackable | 15 + 20 * stack | +15% movement speed |
+| Radius | Stackable | 20 + 20 * stack | +0.25 glow radius |
+| Energy | Stackable | 20 + 20 * stack | +25 max energy, faster regen |
+| Multishot | One-time purchase | 75 | Fire 3 beams in spread pattern |
+| Pierce | One-time purchase | 50 | Beams pass through 1 wall |
+| Fast Beam | One-time purchase | 40 | Double beam velocity |
 
 ## Architecture
 
@@ -204,5 +204,5 @@ redis://localhost:6380
 ### Match Players
 - `match_id` - Associated match
 - `user_id` - Player
-- `color` - Assigned color (#EF4444, #3B82F6, #22C55E, #F59E0B)
+- `color` - Assigned color (#3B82F6, #EF4444, #22C55E, #F59E0B)
 - `score` - Final territory percentage

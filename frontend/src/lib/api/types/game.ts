@@ -92,9 +92,9 @@ export const POWERUP_COSTS: Record<PowerUpType, number> = {
 	speed: 15,
 	radius: 20,
 	energy: 20,
-	multishot: 40,
-	piercing: 35,
-	beam_speed: 30
+	multishot: 75,
+	piercing: 50,
+	beam_speed: 40
 };
 
 // Event payloads

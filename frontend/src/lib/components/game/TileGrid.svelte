@@ -6,7 +6,7 @@
 	// Colors for different tile states - cached
 	const NEUTRAL_COLOR = new THREE.Color('#ffffff');
 	const WALL_COLOR = new THREE.Color('#8c8d8f');
-	const GENERATOR_COLOR = new THREE.Color('#ffffff');
+	const GENERATOR_COLOR = new THREE.Color('#F0B100');
 
 	// 1. Use $state to hold the texture
 	let gradientTexture = $state<THREE.Texture | undefined>(undefined);
@@ -161,8 +161,8 @@
 	{@const owner = gameStore.tileOwners.get(genKey)}
 	{@const baseColor = owner ? gameStore.getPlayerColor(owner) : GENERATOR_COLOR}
 	{@const ownerColor = owner ? darken(baseColor, 0.35) : baseColor}
-	<T.Mesh position={[gen.x, 0.1, gen.y]}>
-		<T.BoxGeometry args={[0.4, 0.4, 0.4]} />
-		<T.MeshStandardMaterial color={ownerColor} emissive={ownerColor} emissiveIntensity={0.4} />
+	<T.Mesh position={[gen.x, 0.07, gen.y]}>
+		<T.CylinderGeometry args={[0.45, 0.45, 0.45, 6]} />
+		<T.MeshStandardMaterial color={ownerColor} emissive={ownerColor} emissiveIntensity={0.5} />
 	</T.Mesh>
 {/each}

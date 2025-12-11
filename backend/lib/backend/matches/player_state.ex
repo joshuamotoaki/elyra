@@ -3,7 +3,7 @@ defmodule Backend.Matches.PlayerState do
   Represents the state of a player in an active match.
   """
 
-  @player_colors ["#EF4444", "#3B82F6", "#22C55E", "#F59E0B"]
+  @player_colors ["#3B82F6", "#EF4444", "#22C55E", "#F59E0B"]
   @max_income 300.0
   @player_radius 0.4
 
@@ -184,9 +184,9 @@ defmodule Backend.Matches.PlayerState do
     base_cost + player.energy_stacks * 10
   end
 
-  def powerup_cost(:multishot, _player), do: 40
-  def powerup_cost(:piercing, _player), do: 35
-  def powerup_cost(:beam_speed, _player), do: 30
+  def powerup_cost(:multishot, _player), do: 75
+  def powerup_cost(:piercing, _player), do: 50
+  def powerup_cost(:beam_speed, _player), do: 40
 
   @doc """
   Returns tiles within the player's glow radius.
