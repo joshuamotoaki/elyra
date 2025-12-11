@@ -67,5 +67,8 @@
 				Continue with Google
 			</Button>
 		</Card>
+		<div class="absolute bottom-10 text-md font-medium text-violet-600">
+			Created by Joshua Lau '26, Julia Ying '26, Maya Doron-Repa '27
+		</div>
 	</div>
 </PageBackground>
