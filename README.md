@@ -4,6 +4,9 @@
 
 A real-time multiplayer territory control game with 3D graphics. Players compete to capture the most territory by moving around the map and firing beams that claim tiles.
 
+Project Writeup: https://docs.google.com/document/d/1PifD66PaWbdBMH4Bfm7FqKWGwO2FxnwhrYRq6K-Fxjk/edit?usp=sharing
+Demo Video: 
+
 ## Tech Stack
 
 | Layer | Technology |
