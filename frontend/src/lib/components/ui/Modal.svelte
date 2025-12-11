@@ -38,7 +38,7 @@
 	>
 		<!-- Modal -->
 		<div
-			class="relative mx-4 max-h-[85vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-6 shadow-large"
+			class="relative mx-4 max-h-[85vh] w-full max-w-3xl overflow-auto rounded-2xl bg-white p-6 shadow-large"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={title ? 'modal-title' : undefined}
@@ -46,7 +46,7 @@
 			<!-- Header -->
 			{#if title}
 				<div class="mb-4 flex items-center justify-between">
-					<h2 id="modal-title" class="text-xl font-semibold text-slate-800">{title}</h2>
+					<h2 id="modal-title" class="text-2xl font-semibold text-slate-800">{title}</h2>
 					<button
 						onclick={onClose}
 						class="rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 cursor-pointer"

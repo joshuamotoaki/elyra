@@ -27,7 +27,7 @@
 	let error = $state<string | null>(null);
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 	let showWarning = $state(true);
-	let showHowToPlay = $state(false);
+	let showHowToPlay = $state(true);
 
 	const WARNING_DISMISSED_KEY = 'elyra-warning-dismissed';
 
@@ -334,17 +334,78 @@
 <!-- How to Play Modal -->
 <Modal bind:open={showHowToPlay} onClose={() => (showHowToPlay = false)} title="How to Play">
 	<div class="space-y-4">
-		<p>
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
-			labore et dolore magna aliqua.
-		</p>
-		<p>
-			Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-			commodo consequat.
-		</p>
-		<p>
-			Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-			pariatur.
-		</p>
+		<h2 class="font-semibold text-lg">Objective</h2>
+		<p>Capture the highest percentage of territory before time runs out (2 minutes).</p>
+		<h2 class="font-semibold text-lg">Game Modes</h2>
+		<p>Multiplayer (2-4 players) - Compete for territory in 2-minute matches</p>
+		<p>Solo Practice - No time limit, practice mechanics freely</p>
+		<h2 class="font-semibold text-lg">Controls</h2>
+		<p>WASD or arrow keys - Move your character</p>
+		<p>Mouse - Aim direction</p>
+		<p>Click and drag - Rotate game board</p>
+		<p>Space Bar - Fire a beam</p>
+		<h2 class="font-semibold text-lg">Territory Capture</h2>
+		<p>Glow Radius - Your character passively captures tiles within a glowing radius</p>
+		<p>Beams - Fire energy beams that capture all tiles along their path</p>
+		<p>Generators - Control generator tiles for bonus income</p>
+		<h2 class="font-semibold text-lg">Map Features</h2>
+		<p>Tiles - Walkable and colored same color as player who captured it</p>
+		<p>Walls - Block movement and beams</p>
+		<p>Mirrors - Reflect beams at 90 degrees</p>
+		<p>Generators - Provide bonus income when owned</p>
+		<h2 class="font-semibold text-lg">Economy & Power-ups</h2>
+		<p>Earn coins from passive income (1 coin/sec) and owning generators (3 coins/sec)</p>
+		<p>Spend coins on power-ups:</p>
+		<table class="md-table">
+			<thead>
+				<tr>
+					<th>Power-up</th>
+					<th>Stackability</th>
+					<th>Cost</th>
+					<th>Effect</th>
+				</tr>
+			</thead>
+
+			<tbody
+				><tr>
+					<td>Speed</td><td>Stackable</td><td>15 + 20 * stack</td><td>+15% movement speed</td></tr
+				><tr>
+					<td>Radius</td><td>Stackable</td><td>20 + 20 * stack</td><td>+0.25 glow radius</td></tr
+				><tr>
+					<td>Energy</td><td>Stackable</td><td>20 + 20 * stack</td><td
+						>+25 max energy, faster regen</td
+					></tr
+				><tr>
+					<td>Multishot</td><td>One-time purchase</td><td>75</td><td
+						>Fire 3 beams in spread pattern</td
+					></tr
+				><tr>
+					<td>Pierce</td><td>One-time purchase</td><td>50</td><td
+						>Beams pass through 1 wall
+					</td></tr
+				><tr>
+					<td>Fast Beam</td><td>One-time purchase</td><td>40</td><td>Double beam velocity </td></tr
+				></tbody
+			>
+		</table>
 	</div>
 </Modal>
+
+<style>
+	.md-table {
+		border-collapse: collapse;
+		margin: 1rem 0;
+	}
+
+	.md-table th,
+	.md-table td {
+		border: 1px solid #ddd;
+		padding: 6px 10px;
+		white-space: nowrap;
+	}
+
+	.md-table thead th {
+		font-weight: bold;
+		background: #f7f7f7;
+	}
+</style>

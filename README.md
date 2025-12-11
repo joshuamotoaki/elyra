@@ -19,15 +19,26 @@ A real-time multiplayer territory control game with 3D graphics. Players compete
 ### Objective
 Capture the highest percentage of territory before time runs out (2 minutes).
 
+### Game Modes
+- **Multiplayer (2-4 players)** - Compete for territory in 2-minute matches
+- **Solo Practice** - No time limit, practice mechanics freely
+
 ### Controls
-- **WASD** - Move your character
+- **WASD or arrow keys** - Move your character
 - **Mouse** - Aim direction
-- **Click** - Fire a beam
+- **Click and drag** - Rotate game board
+- **Space Bar** - Fire a beam
 
 ### Territory Capture
-- **Glow Radius**: Your character passively captures tiles within a glowing radius
-- **Beams**: Fire energy beams that capture all tiles along their path
-- **Generators**: Control generator tiles for bonus income
+- **Glow Radius** - Your character passively captures tiles within a glowing radius
+- **Beams** - Fire energy beams that capture all tiles along their path
+- **Generators** - Control generator tiles for bonus income
+
+### Map Features
+- **Tiles** - Walkable and colored same color as player who captured it
+- **Walls** - Block movement and beams
+- **Mirrors** - Reflect beams at 90 degrees
+- **Generators** - Provide bonus income when owned
 
 ### Economy & Power-ups
 Earn coins from:
@@ -41,17 +52,8 @@ Spend coins on power-ups:
 | Radius | Stackable | 20 + 20 * stack | +0.25 glow radius |
 | Energy | Stackable | 20 + 20 * stack | +25 max energy, faster regen |
 | Multishot | One-time purchase | 75 | Fire 3 beams in spread pattern |
-| Piercing | One-time purchase | 50 | Beams pass through 1 wall |
-| Beam Speed | One-time purchase | 40 | Double beam velocity |
-
-### Map Features
-- **Walls** - Block movement and beams
-- **Mirrors** - Reflect beams at 90 degrees
-- **Generators** - Provide bonus income when owned
-
-### Game Modes
-- **Multiplayer** (2-4 players): Compete for territory in 2-minute matches
-- **Solo Practice**: No time limit, practice mechanics freely
+| Pierce | One-time purchase | 50 | Beams pass through 1 wall |
+| Fast Beam | One-time purchase | 40 | Double beam velocity |
 
 ## Architecture
 
