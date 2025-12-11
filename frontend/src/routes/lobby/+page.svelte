@@ -351,6 +351,7 @@
 		<h2 class="font-semibold text-lg">Map Features</h2>
 		<p>Tiles - Walkable and colored same color as player who captured it</p>
 		<p>Walls - Block movement and beams</p>
+		<p>Holes - Block movement</p>
 		<p>Mirrors - Reflect beams at 90 degrees</p>
 		<p>Generators - Provide bonus income when owned</p>
 		<h2 class="font-semibold text-lg">Economy & Power-ups</h2>
