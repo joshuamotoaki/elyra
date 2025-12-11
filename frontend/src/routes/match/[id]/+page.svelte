@@ -152,7 +152,7 @@
 				<Button
 					class="btn btn-start"
 					onclick={startGame}
-					variant="secondary"
+					variant="primary"
 					loading={isStartingGame}
 					disabled={isStartingGame || (!gameStore.isSolo && gameStore.playerList.length < 2)}
 				>
@@ -286,6 +286,7 @@
 	}
 
 	.title {
+		color: rgba(0, 0, 0, 0.7);
 		font-size: 2rem;
 		font-weight: bold;
 		margin-bottom: 0.5rem;
@@ -294,20 +295,20 @@
 	.match-code {
 		font-size: 3rem;
 		font-family: monospace;
-		color: #60a5fa;
+		color: var(--color-violet-600);
 		margin-bottom: 0.5rem;
 		letter-spacing: 0.2em;
 	}
 
 	.subtitle,
 	.waiting-text {
-		color: #9ca3af;
+		color: rgba(0, 0, 0, 0.7);
 		margin-bottom: 2rem;
 	}
 
 	.players-box,
 	.scores-box {
-		background: #1e293b;
+		background: rgba(0, 0, 0, 0.7);
 		border-radius: 0.75rem;
 		padding: 1.5rem;
 		margin-bottom: 1.5rem;
@@ -408,7 +409,7 @@
 	.btn-text {
 		background: none;
 		border: none;
-		color: #9ca3af;
+		color: rgba(0, 0, 0, 0.7);
 		cursor: pointer;
 		margin-top: 1rem;
 	}
