@@ -37,6 +37,7 @@ Capture the highest percentage of territory before time runs out (2 minutes).
 ### Map Features
 - **Tiles** - Walkable and colored same color as player who captured it
 - **Walls** - Block movement and beams
+- **Holes** - Block movement
 - **Mirrors** - Reflect beams at 90 degrees
 - **Generators** - Provide bonus income when owned
 
