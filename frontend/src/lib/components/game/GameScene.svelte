@@ -9,7 +9,7 @@
 	import BeamEffect from './BeamEffect.svelte';
 
 	// Camera is centered on the map
-	const mapCenter = 15; // Center of 30x30 grid
+	const mapCenter = 10; // Center of 20x20 grid
 	const cameraHeight = 40;
 	const cameraDistance = 28;
 

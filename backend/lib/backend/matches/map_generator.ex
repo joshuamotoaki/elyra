@@ -3,14 +3,14 @@ defmodule Backend.Matches.MapGenerator do
   Generates game maps with tiles, generators, walls, mirrors, and holes.
   """
 
-  @grid_size 30
-  @generator_count_range 8..12
-  @generator_min_distance 15
-  @wall_cluster_count_range 15..25
-  @wall_cluster_size_range 3..10
-  @hole_count_range 5..10
+  @grid_size 20
+  @generator_count_range 6..9
+  @generator_min_distance 8
+  @wall_cluster_count_range 40..60
+  @wall_cluster_size_range 3..6
+  @hole_count_range 10..18
   @mirror_conversion_rate 0.3
-  @spawn_clear_radius 5
+  @spawn_clear_radius 3
 
   @type tile_type :: :walkable | :hole | :wall | :mirror | :generator
 
@@ -35,9 +35,6 @@ defmodule Backend.Matches.MapGenerator do
     # Place wall clusters
     tiles = place_wall_clusters(tiles, generators)
 
-    # Place holes
-    tiles = place_holes(tiles, generators)
-
     # Convert some walls to mirrors
     tiles = convert_walls_to_mirrors(tiles)
 
@@ -46,6 +43,12 @@ defmodule Backend.Matches.MapGenerator do
 
     # Clear areas around spawns
     tiles = clear_spawn_areas(tiles, spawn_points)
+
+    # Place holes AFTER clearing spawn areas so they don't get wiped
+    tiles = place_holes(tiles, generators)
+
+    # Fill in any unreachable tiles (convert to walls)
+    tiles = fill_unreachable_tiles(tiles, spawn_points)
 
     # Validate connectivity (ensure all spawns can reach each other)
     if connected?(tiles, spawn_points) do
@@ -95,8 +98,8 @@ defmodule Backend.Matches.MapGenerator do
 
   defp place_generators_recursive(tiles, generators, remaining, attempts) do
     # Avoid edges
-    x = Enum.random(10..(@grid_size - 11))
-    y = Enum.random(10..(@grid_size - 11))
+    x = Enum.random(5..(@grid_size - 6))
+    y = Enum.random(5..(@grid_size - 6))
     pos = {x, y}
 
     if far_enough_from_all?(pos, generators, @generator_min_distance) do
@@ -125,24 +128,24 @@ defmodule Backend.Matches.MapGenerator do
     end)
   end
 
-  defp place_wall_cluster(tiles, generators) do
-    # Pick a random starting point (avoiding generators and edges)
-    start_x = Enum.random(5..(@grid_size - 6))
-    start_y = Enum.random(5..(@grid_size - 6))
+  defp place_wall_cluster(tiles, _generators) do
+    # Pick a random starting point throughout the map (just avoiding border)
+    start_x = Enum.random(2..(@grid_size - 3))
+    start_y = Enum.random(2..(@grid_size - 3))
     start_pos = {start_x, start_y}
 
-    # Check not too close to generators
-    if far_enough_from_all?(start_pos, generators, 5) do
+    # Only place if tile is walkable
+    if Map.get(tiles, start_pos) == :walkable do
       cluster_size = Enum.random(@wall_cluster_size_range)
-      grow_cluster(tiles, [start_pos], cluster_size, generators)
+      grow_cluster(tiles, [start_pos], cluster_size)
     else
       tiles
     end
   end
 
-  defp grow_cluster(tiles, _positions, 0, _generators), do: tiles
+  defp grow_cluster(tiles, _positions, 0), do: tiles
 
-  defp grow_cluster(tiles, positions, remaining, generators) do
+  defp grow_cluster(tiles, positions, remaining) do
     # Pick a random position from current cluster
     current = Enum.random(positions)
     {cx, cy} = current
@@ -159,8 +162,7 @@ defmodule Backend.Matches.MapGenerator do
       Enum.filter(neighbors, fn {nx, ny} = pos ->
         nx >= 1 and nx < @grid_size - 1 and
           ny >= 1 and ny < @grid_size - 1 and
-          Map.get(tiles, pos) == :walkable and
-          far_enough_from_all?(pos, generators, 3)
+          Map.get(tiles, pos) == :walkable
       end)
 
     case valid_neighbors do
@@ -170,7 +172,7 @@ defmodule Backend.Matches.MapGenerator do
       _ ->
         new_pos = Enum.random(valid_neighbors)
         new_tiles = Map.put(tiles, new_pos, :wall)
-        grow_cluster(new_tiles, [new_pos | positions], remaining - 1, generators)
+        grow_cluster(new_tiles, [new_pos | positions], remaining - 1)
     end
   end
 
@@ -213,7 +215,7 @@ defmodule Backend.Matches.MapGenerator do
   end
 
   defp calculate_spawn_points do
-    margin = 10
+    margin = 5
 
     [
       {margin, margin},
@@ -242,6 +244,25 @@ defmodule Backend.Matches.MapGenerator do
 
   defp valid_position?({x, y}) do
     x >= 0 and x < @grid_size and y >= 0 and y < @grid_size
+  end
+
+  defp fill_unreachable_tiles(tiles, spawn_points) do
+    # Get all reachable tiles from any spawn point
+    reachable =
+      Enum.reduce(spawn_points, MapSet.new(), fn spawn, acc ->
+        flood_fill(tiles, spawn, acc)
+      end)
+
+    # Convert unreachable walkable tiles to walls
+    tiles
+    |> Enum.map(fn {pos, type} ->
+      if type in [:walkable, :generator] and not MapSet.member?(reachable, pos) do
+        {pos, :wall}
+      else
+        {pos, type}
+      end
+    end)
+    |> Map.new()
   end
 
   defp connected?(tiles, spawn_points) do

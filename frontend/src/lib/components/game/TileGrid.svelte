@@ -7,6 +7,7 @@
 	const NEUTRAL_COLOR = new THREE.Color('#ffffff');
 	const WALL_COLOR = new THREE.Color('#8c8d8f');
 	const GENERATOR_COLOR = new THREE.Color('#F0B100');
+	const HOLE_COLOR = new THREE.Color('#1a1a1a');
 
 	// 1. Use $state to hold the texture
 	let gradientTexture = $state<THREE.Texture | undefined>(undefined);
@@ -90,6 +91,22 @@
 		return result;
 	});
 
+	let holeTiles = $derived.by(() => {
+		const result: TileInstance[] = [];
+		const gridSize = gameStore.gridSize;
+
+		for (let x = 0; x < gridSize; x++) {
+			for (let y = 0; y < gridSize; y++) {
+				const key = `${x},${y}`;
+				const type = gameStore.mapTiles.get(key) || 'walkable';
+				if (type === 'hole') {
+					result.push({ x, y, key, type });
+				}
+			}
+		}
+		return result;
+	});
+
 	// Get color for a tile - uses cached colors
 	function getTileColor(key: string, type: string): THREE.Color {
 		if (type === 'generator') {
@@ -147,6 +164,15 @@
 				roughness={isMirror ? 0.2 : 0.8}
 				metalness={isMirror ? 0.5 : 0.1}
 			/>
+		</T.Mesh>
+	</T.Group>
+{/each}
+
+<!-- Render holes -->
+{#each holeTiles as tile (tile.key)}
+	<T.Group position={[tile.x + 0.5, 0, tile.y + 0.5]}>
+		<T.Mesh position={[0, -0.2, 0]} geometry={tileGeo}>
+			<T.MeshStandardMaterial color={HOLE_COLOR} />
 		</T.Mesh>
 	</T.Group>
 {/each}
