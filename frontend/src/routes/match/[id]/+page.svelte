@@ -88,7 +88,7 @@
 	}
 </script>
 
-<div class="match-container">
+<div class="match-container bg-linear-to-br from-[#e2e2c5] via-[#92ddcd] to-[#43b6bd]">
 	{#if gameStore.isConnecting}
 		<!-- Loading State -->
 		<div class="loading">
@@ -243,7 +243,6 @@
 	.match-container {
 		min-height: 100vh;
 		height: 100vh;
-		background: #8a75d8;
 		color: white;
 		overflow: hidden;
 		position: relative;

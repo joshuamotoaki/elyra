@@ -27,7 +27,7 @@
 	let error = $state<string | null>(null);
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 	let showWarning = $state(true);
-	let showHowToPlay = $state(true);
+	let showHowToPlay = $state(false);
 
 	const WARNING_DISMISSED_KEY = 'elyra-warning-dismissed';
 
