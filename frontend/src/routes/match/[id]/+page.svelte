@@ -99,7 +99,9 @@
 		<!-- Error State -->
 		<div class="error-state">
 			<div class="error-text">Error: {gameStore.error}</div>
-			<button class="btn btn-primary" onclick={returnToLobby}> Return to Lobby </button>
+			<Button class="btn btn-primary" variant="primary" onclick={returnToLobby}>
+				Return to Lobby
+			</Button>
 		</div>
 	{:else if gameStore.status === 'waiting'}
 		<!-- Waiting Room -->
@@ -234,7 +236,9 @@
 				</div>
 			{/if}
 
-			<button class="btn btn-primary" onclick={returnToLobby}> Return to Lobby </button>
+			<Button class="btn btn-primary" variant="primary" onclick={returnToLobby}
+				>Return to Lobby</Button
+			>
 		</div>
 	{/if}
 </div>
@@ -425,7 +429,7 @@
 
 	.winner-label {
 		font-size: 1.25rem;
-		color: #9ca3af;
+		color: rgba(0, 0, 0, 0.7);
 		margin-bottom: 0.5rem;
 	}
 
@@ -437,11 +441,13 @@
 	}
 
 	.winner-name {
+		color: rgba(0, 0, 0, 0.7);
 		font-size: 2rem;
 		font-weight: bold;
 	}
 
 	.winner-you {
+		color: rgba(0, 0, 0, 0.7);
 		font-size: 1.5rem;
 	}
 </style>
