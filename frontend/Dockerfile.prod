@@ -19,13 +19,12 @@ FROM node:24-alpine AS runtime
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -g 1000 nodejs && adduser -u 1000 -G nodejs -s /bin/sh -D nodejs
-USER nodejs
+# Use existing node user (UID 1000)
+USER node
 
 # Copy built application
-COPY --from=build --chown=nodejs:nodejs /app/build ./build
-COPY --from=build --chown=nodejs:nodejs /app/package.json ./
+COPY --from=build --chown=node:node /app/build ./build
+COPY --from=build --chown=node:node /app/package.json ./
 
 ENV NODE_ENV=production
 ENV PORT=3000
