@@ -27,8 +27,8 @@ if System.get_env("PHX_SERVER") do
 end
 
 # Google OAuth
-google_client_id = env!("GOOGLE_CLIENT_ID", :string, nil)
-google_client_secret = env!("GOOGLE_CLIENT_SECRET", :string, nil)
+google_client_id = System.get_env("GOOGLE_CLIENT_ID")
+google_client_secret = System.get_env("GOOGLE_CLIENT_SECRET")
 
 if google_client_id do
   config :ueberauth, Ueberauth.Strategy.Google.OAuth,
@@ -37,7 +37,7 @@ if google_client_id do
 end
 
 # Guardian secret key (production)
-guardian_secret = env!("GUARDIAN_SECRET_KEY", :string, nil)
+guardian_secret = System.get_env("GUARDIAN_SECRET_KEY")
 
 if guardian_secret do
   config :backend, Backend.Guardian, secret_key: guardian_secret
