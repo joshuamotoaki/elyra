@@ -12,6 +12,9 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source and build
 COPY . .
+
+# Increase Node.js memory for large builds (Three.js, etc.)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm build
 
 # Runtime stage
