@@ -1,7 +1,6 @@
 # Build stage
 ARG ELIXIR_VERSION=1.18
 ARG OTP_VERSION=27
-ARG ALPINE_VERSION=3.21
 
 FROM elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}-alpine AS build
 
@@ -39,10 +38,11 @@ COPY config/runtime.exs config/
 # Create the release
 RUN mix release
 
-# Runtime stage
-FROM alpine:${ALPINE_VERSION} AS runtime
+# Runtime stage - use same base image to ensure OpenSSL compatibility
+FROM elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}-alpine AS runtime
 
-RUN apk add --no-cache libstdc++ openssl ncurses-libs
+# Only need runtime dependencies
+RUN apk add --no-cache libstdc++ ncurses-libs
 
 WORKDIR /app
 
