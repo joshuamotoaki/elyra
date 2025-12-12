@@ -196,13 +196,26 @@ Certificates will be stored in `certbot/conf/live/elyra.tigerapps.org/`.
 
 ## 8. Initial Deployment
 
+### First-Time Setup (Before CI/CD is configured)
+
+For the initial deployment, you need to trigger the GitHub Actions workflow first to build and push the images. Either:
+1. Push a commit to `main` branch, OR
+2. Manually trigger the workflow from GitHub Actions tab
+
 ### Start Services
 
 ```bash
 cd /home/ubuntu/elyra
 
-# Build and start all containers
-docker compose -f docker-compose.prod.yml up -d --build
+# Create .env file for POSTGRES_PASSWORD
+echo "POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD" > .env
+
+# Log in to GitHub Container Registry (if packages are private)
+echo "YOUR_GHCR_TOKEN" | docker login ghcr.io -u joshuamotoaki --password-stdin
+
+# Pull and start all containers
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
 
 # Check status
 docker compose -f docker-compose.prod.yml ps
@@ -230,7 +243,19 @@ Ecto.Migrator.run(Backend.Repo, :up, all: true)
 
 ## 9. GitHub Actions CD Setup
 
-Configure the following secrets in your GitHub repository:
+The CI/CD pipeline builds Docker images in GitHub Actions (which has more memory) and pushes them to GitHub Container Registry (GHCR). The EC2 instance only pulls and runs the pre-built images.
+
+### Create a Personal Access Token (PAT) for GHCR
+
+1. Go to GitHub → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+2. Click **Generate new token (classic)**
+3. Set:
+   - Note: `elyra-ghcr`
+   - Expiration: 90 days (or longer)
+   - Scopes: `read:packages`, `write:packages`
+4. Copy the token
+
+### Configure Repository Secrets
 
 **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
@@ -239,6 +264,7 @@ Configure the following secrets in your GitHub repository:
 | EC2_HOST      | Your EC2 public IP or hostname            |
 | EC2_USER      | `ubuntu`                                  |
 | EC2_SSH_KEY   | Contents of your EC2 private key (.pem)   |
+| GHCR_TOKEN    | Your GitHub PAT with `read:packages`      |
 
 ### Generate SSH Key (if needed)
 
@@ -254,6 +280,10 @@ cat ~/.ssh/id_ed25519
 ```
 
 **Important**: Ensure the private key includes `-----BEGIN` and `-----END` lines.
+
+### Make Package Public (Optional)
+
+After the first successful build, go to your GitHub profile → **Packages** → select the package → **Package settings** → **Change visibility** → **Public**. This removes the need for authentication when pulling.
 
 ---
 
@@ -281,11 +311,11 @@ docker compose -f docker-compose.prod.yml restart
 docker compose -f docker-compose.prod.yml restart backend
 ```
 
-### Rebuild and Deploy
+### Pull Latest and Deploy
 
 ```bash
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Database Access

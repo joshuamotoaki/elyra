@@ -17,9 +17,7 @@ services:
       - elyra-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+    image: ghcr.io/joshuamotoaki/elyra/frontend:latest
     container_name: elyra-frontend
     environment:
       - PUBLIC_API_URL=https://elyra.tigerapps.org
@@ -28,9 +26,7 @@ services:
       - elyra-network
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
+    image: ghcr.io/joshuamotoaki/elyra/backend:latest
     container_name: elyra-backend
     env_file:
       - .env.prod
