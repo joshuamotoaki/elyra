@@ -7,7 +7,7 @@
 
 	let isLoading = $state(false);
 
-	const API_URL = 'http://localhost:4000';
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 	onMount(async () => {
 		if (auth.token) {
@@ -20,7 +20,7 @@
 
 	function signInWithGoogle() {
 		isLoading = true;
-		window.location.href = `${API_URL}/api/auth/google`;
+		window.location.href = `${API_URL}/auth/google`;
 	}
 </script>
 

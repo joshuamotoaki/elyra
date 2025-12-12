@@ -36,7 +36,13 @@ export class SocketService implements ISocketService {
 			return;
 		}
 
-		this.socket = new Socket('ws://localhost:4000/socket', {
+		// Derive WebSocket URL from API URL
+		const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+		const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
+		const host = new URL(apiUrl).host;
+		const socketUrl = `${wsProtocol}://${host}/socket`;
+
+		this.socket = new Socket(socketUrl, {
 			params: { token }
 		});
 		this.socket.connect();
