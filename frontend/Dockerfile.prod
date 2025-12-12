@@ -1,0 +1,35 @@
+# Build stage
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Install dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Copy source and build
+COPY . .
+RUN pnpm build
+
+# Runtime stage
+FROM node:24-alpine AS runtime
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1000 nodejs && adduser -u 1000 -G nodejs -s /bin/sh -D nodejs
+USER nodejs
+
+# Copy built application
+COPY --from=build --chown=nodejs:nodejs /app/build ./build
+COPY --from=build --chown=nodejs:nodejs /app/package.json ./
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+EXPOSE 3000
+
+CMD ["node", "build"]
