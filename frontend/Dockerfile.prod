@@ -13,6 +13,9 @@ RUN pnpm install --frozen-lockfile
 # Copy source and build
 COPY . .
 
+# Set API URL for production build (Vite embeds this at build time)
+ENV VITE_API_URL=https://elyra.tigerapps.org/api
+
 # Increase Node.js memory for large builds (Three.js, etc.)
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm build

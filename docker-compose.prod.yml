@@ -19,8 +19,6 @@ services:
   frontend:
     image: ghcr.io/joshuamotoaki/elyra/frontend:latest
     container_name: elyra-frontend
-    environment:
-      - PUBLIC_API_URL=https://elyra.tigerapps.org
     restart: unless-stopped
     networks:
       - elyra-network
