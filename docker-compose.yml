@@ -6,7 +6,6 @@ services:
     container_name: elyra-backend
     environment:
       DATABASE_URL: ecto://postgres:postgres@postgres:5432/elyra
-      REDIS_URL: redis://redis:6380
       PHX_HOST: localhost
       PHX_IP: "0.0.0.0"
       PORT: 4000
@@ -16,8 +15,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_started
     restart: unless-stopped
     profiles:
       - backend
@@ -57,16 +54,5 @@ services:
       timeout: 5s
       retries: 5
 
-
-  redis:
-    image: redis:8-alpine
-    container_name: elyra-redis
-    ports:
-      - "6380:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
 volumes:
   postgres_data:
-  redis_data:

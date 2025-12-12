@@ -10,7 +10,6 @@ dev-local: db-up
 	@echo ""
 	@echo "✓ Databases running"
 	@echo "  → Postgres: localhost:5432"
-	@echo "  → Redis:    localhost:6380"
 	@echo ""
 	@echo "Now run locally:"
 	@echo "  cd backend && mix phx.server"
@@ -26,7 +25,6 @@ dev-frontend:
 	@echo ""
 	@echo "✓ Backend stack running"
 	@echo "  → Postgres: localhost:5432"
-	@echo "  → Redis:    localhost:6380"
 	@echo "  → Backend:  localhost:4000"
 	@echo ""
 	@echo "Now run your frontend locally:"
@@ -42,7 +40,6 @@ dev-full:
 	@echo ""
 	@echo "✓ Full stack running in Docker"
 	@echo "  → Postgres: localhost:5432"
-	@echo "  → Redis:    localhost:6380"
 	@echo "  → Backend:  localhost:4000"
 	@echo "  → Frontend: localhost:3000"
 	@echo ""
@@ -51,13 +48,13 @@ dev-full:
 # Database commands
 # =============================================================================
 db-up:
-	docker compose up -d postgres redis
+	docker compose up -d postgres
 
 db-down:
-	docker compose stop postgres redis
+	docker compose stop postgres
 
 db-clear:
-	docker compose down -v postgres redis
+	docker compose down -v postgres
 
 # =============================================================================
 # General commands

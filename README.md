@@ -14,7 +14,6 @@ Demo Video:
 | Frontend | SvelteKit, TypeScript, Three.js, Threlte |
 | Backend | Elixir, Phoenix, Phoenix Channels (WebSockets) |
 | Database | PostgreSQL |
-| Cache | Redis |
 | Infrastructure | Docker, Docker Compose |
 
 ## Game Mechanics
@@ -175,18 +174,12 @@ cd frontend && pnpm dev
 | Frontend | 3000 |
 | Backend | 4000 |
 | PostgreSQL | 5432 |
-| Redis | 6380 |
 
 ### Environment
 
 Local database URL:
 ```
 postgresql://postgres:postgres@localhost:5432/elyra
-```
-
-Local Redis URL:
-```
-redis://localhost:6380
 ```
 
 ## Database Schema
