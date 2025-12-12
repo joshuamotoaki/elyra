@@ -2,10 +2,11 @@
 
 ### COS426 Final Project, Princeton University, Fall 2025
 
-A real-time multiplayer territory control game with 3D graphics. Players compete to capture the most territory by moving around the map and firing beams that claim tiles.
+⚡ A fast-paced multiplayer arena game where players battle for territory using energy beams that bounce off mirrors, pierce through walls, and paint the map in their color. Capture generators for bonus income, spend coins on powerful upgrades, and outmaneuver opponents in 2-minute matches. Solo practice or up to 4-player competitive chaos — all rendered in 3D with a rotatable camera. 🎮
 
 Project Writeup: https://docs.google.com/document/d/1PifD66PaWbdBMH4Bfm7FqKWGwO2FxnwhrYRq6K-Fxjk/edit?usp=sharing
-Demo Video: 
+
+Demo Video: <COMING SOON>
 
 ## Tech Stack
 
@@ -14,7 +15,7 @@ Demo Video:
 | Frontend | SvelteKit, TypeScript, Three.js, Threlte |
 | Backend | Elixir, Phoenix, Phoenix Channels (WebSockets) |
 | Database | PostgreSQL |
-| Infrastructure | Docker, Docker Compose |
+| Infrastructure & CI/CD | Docker, AWS EC2, GitHub Actions |
 
 ## Game Mechanics
 
@@ -62,29 +63,39 @@ Spend coins on power-ups:
 
 ```
 elyra/
-├── backend/                    # Elixir/Phoenix API & game server
-│   ├── lib/backend/
-│   │   ├── accounts/          # User management & OAuth
-│   │   └── matches/           # Game logic
-│   │       ├── match_server.ex    # GenServer: 20Hz game loop
-│   │       ├── player_state.ex    # Player state & power-ups
-│   │       ├── beam_physics.ex    # Beam movement & collision
-│   │       ├── economy.ex         # Coins & income
-│   │       └── map_generator.ex   # Procedural map generation
-│   └── lib/backend_web/
-│       ├── channels/          # WebSocket real-time communication
-│       └── controllers/       # REST API endpoints
+├── backend/                       # Elixir/Phoenix API & game server
+│   └── lib/
+│       ├── backend/
+│       │   ├── accounts/          # User management
+│       │   ├── guardian.ex        # JWT authentication
+│       │   └── matches/           # Game logic
+│       │       ├── match_server.ex     # GenServer: 20Hz game loop
+│       │       ├── match_supervisor.ex # DynamicSupervisor for matches
+│       │       ├── beam_physics.ex     # DDA ray-casting & reflections
+│       │       ├── player_state.ex     # Player state & power-ups
+│       │       ├── economy.ex          # Coins & income
+│       │       └── map_generator.ex    # Procedural map generation
+│       └── backend_web/
+│           ├── channels/          # WebSocket (Phoenix Channels)
+│           ├── controllers/       # REST API endpoints
+│           └── plugs/             # Auth pipeline & middleware
 │
-├── frontend/                   # SvelteKit + Three.js client
+├── frontend/                      # SvelteKit + Three.js client
 │   └── src/
-│       ├── routes/            # Pages (lobby, match, etc.)
+│       ├── routes/                # Pages (/, lobby, match/[id], onboarding)
 │       └── lib/
-│           ├── api/           # API client & WebSocket service
-│           ├── stores/        # Svelte state management
+│           ├── api/
+│           │   ├── services/      # Auth, Match, Socket, User services
+│           │   └── types/         # TypeScript interfaces
+│           ├── stores/            # Svelte state (auth, game)
+│           ├── game/              # Input handling & game logic
 │           └── components/
-│               └── game/      # 3D rendering (Three.js/Threlte)
+│               ├── game/          # 3D scene (GameCanvas, TileGrid, PlayerAvatar, BeamEffect)
+│               ├── ui/            # Reusable UI (Button, Card, Modal, etc.)
+│               └── layout/        # Header, PageBackground
 │
-└── docker-compose.yml         # Container orchestration
+├── docker-compose.yml             # Dev container orchestration
+└── docker-compose.prod.yml        # Production deployment
 ```
 
 ### Real-time Communication
