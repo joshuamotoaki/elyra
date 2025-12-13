@@ -8,7 +8,7 @@ Play the game at [elyra.tigerapps.org](https://elyra.tigerapps.org) 🎉
 
 Project Writeup: https://docs.google.com/document/d/1PifD66PaWbdBMH4Bfm7FqKWGwO2FxnwhrYRq6K-Fxjk/edit?usp=sharing
 
-Demo Video: <COMING SOON>
+Demo Video: https://www.youtube.com/watch?v=iNiSVniPqPk
 
 ## Tech Stack
 
