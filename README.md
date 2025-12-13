@@ -2,6 +2,8 @@
 
 ### COS426 Final Project, Princeton University, Fall 2025
 
+Play the game at [elyra.tigerapps.org](https://elyra.tigerapps.org) 🎉
+
 ⚡ A fast-paced multiplayer arena game where players battle for territory using energy beams that bounce off mirrors, pierce through walls, and paint the map in their color. Capture generators for bonus income, spend coins on powerful upgrades, and outmaneuver opponents in 2-minute matches. Solo practice or up to 4-player competitive chaos — all rendered in 3D with a rotatable camera. 🎮
 
 Project Writeup: https://docs.google.com/document/d/1PifD66PaWbdBMH4Bfm7FqKWGwO2FxnwhrYRq6K-Fxjk/edit?usp=sharing
